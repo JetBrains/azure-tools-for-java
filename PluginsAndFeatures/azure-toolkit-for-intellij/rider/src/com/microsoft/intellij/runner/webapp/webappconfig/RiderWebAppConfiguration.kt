@@ -14,6 +14,7 @@ import com.jetbrains.rider.model.publishableProjectsModel
 import com.jetbrains.rider.projectView.solution
 import com.jetbrains.rider.util.firstOrNull
 import com.microsoft.azure.management.appservice.PricingTier
+import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.utils.AzureModel
 import com.microsoft.intellij.runner.AzureRunConfigurationBase
@@ -66,6 +67,13 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         private const val LOCATION_MISSING = "Location not provided"
         private const val PRICING_TIER_MISSING = "Pricing Tier not provided"
 
+        private const val CONNECTION_STRING_NAME_MISSING = "Connection string name not provided"
+        private const val CONNECTION_STRING_NAME_ALREADY_EXISTS = "Connection String with name '%s' already exists"
+
+        private const val DATABASE_MISSING = "Database not provided"
+        private const val DATABASE_ADMIN_LOGIN_MISSING = "SQL Database admin login name not provided"
+        private const val DATABASE_ADMIN_PASSWORD_MISSING = "SQL Database admin password not provided"
+
         private const val WEB_APP_TARGET_NAME = "Microsoft.WebApplication.targets"
     }
 
@@ -106,12 +114,22 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
     /**
      * Validate the configuration to run
      *
+     * TODO: Make a different approach - when you type something - we make a real async call to Azure to not block the main thread.
+     * TODO: Then when we got a result - we update validation status
+     *
      * @throws [RuntimeConfigurationError] when configuration miss expected fields
      */
     @Throws(RuntimeConfigurationError::class)
     override fun checkConfiguration() {
         validateSignIn()
         validateProject()
+
+        if (myModel.isDatabaseConnectionEnabled) {
+            validateDatabase(myModel.database)
+            checkValueSet(myModel.sqlDatabaseAdminLogin, DATABASE_ADMIN_LOGIN_MISSING)
+            checkValueSet(myModel.sqlDatabaseAdminPassword, DATABASE_ADMIN_PASSWORD_MISSING)
+            // validateSqlDbAdminPassword("aaa", charArrayOf())
+        }
 
         if (myModel.isCreatingWebApp) {
             validateWebAppName(myModel.webAppName)
@@ -131,7 +149,10 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
                 checkValueSet(myModel.appServicePlanId, APP_SERVICE_PLAN_MISSING)
             }
         } else {
-            checkValueSet(myModel.webAppId, WEB_APP_MISSING)
+            val webAppId = checkValueSet(myModel.webAppId, WEB_APP_MISSING)
+
+            if (myModel.isDatabaseConnectionEnabled)
+                checkConnectionStringNameExistence(myModel.connectionStringName, webAppId)
         }
     }
 
@@ -216,7 +237,6 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
 
 //        AzureDotNetWebAppMvpModel.checkResourceGroupExistenceAsync(subscriptionId, resourceGroupName)
 //                .subscribe { if (it) throw RuntimeConfigurationError(String.format(RESOURCE_GROUP_ALREADY_EXISTS, resourceGroupName)) }
-
     }
 
     //endregion Resource Group
@@ -283,6 +303,36 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
 
     //endregion App Service Plan
 
+    //region Database Connection
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun validateDatabase(database: SqlDatabase?) {
+        if (database == null) throw RuntimeConfigurationError(DATABASE_MISSING)
+    }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun checkConnectionStringNameExistence(name: String?, webAppId: String) {
+
+        val connectionStringName = checkValueSet(name, CONNECTION_STRING_NAME_MISSING)
+
+        val webApp = AzureModel.getInstance().resourceGroupToWebAppMap
+                .flatMap { it.value }
+                .firstOrNull { it.id() == webAppId } ?: return
+
+        if (webApp.connectionStrings().containsKey(connectionStringName))
+            throw RuntimeConfigurationError(String.format(CONNECTION_STRING_NAME_ALREADY_EXISTS, connectionStringName))
+    }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun validateSqlDbAdminPassword(login: String?, password: CharArray?) {
+        val sqlDbAdminLogin = checkValueSet(login, "AAAAA")
+        val sqlDbAdminPassword = checkValueSet(password, "BBBBB")
+    }
+
+    //endregion Database Connection
+
+    //region Private Methods and Operators
+
     /**
      * Validate Azure resource name against Azure requirements
      * Please see for details - https://docs.microsoft.com/en-us/azure/architecture/best-practices/naming-conventions
@@ -326,4 +376,12 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         if (value == null) throw RuntimeConfigurationError(message)
         return value
     }
+
+    @Throws(RuntimeConfigurationError::class)
+    private fun checkValueSet(value: CharArray?, message: String): CharArray {
+        if (value == null || value.isEmpty()) throw RuntimeConfigurationError(message)
+        return value
+    }
+
+    //endregion Private Methods and Operators
 }

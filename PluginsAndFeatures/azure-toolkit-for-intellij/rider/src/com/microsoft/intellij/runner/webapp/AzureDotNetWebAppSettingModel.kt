@@ -2,6 +2,7 @@ package com.microsoft.intellij.runner.webapp
 
 import com.jetbrains.rider.model.PublishableProjectModel
 import com.microsoft.azure.management.appservice.PricingTier
+import com.microsoft.azure.management.sql.SqlDatabase
 
 class AzureDotNetWebAppSettingModel {
     var subscriptionId: String? = null
@@ -20,4 +21,10 @@ class AzureDotNetWebAppSettingModel {
     var appServicePlanName: String? = null
     var region: String? = null
     var pricingTier: PricingTier? = null
+
+    var isDatabaseConnectionEnabled: Boolean = false
+    var connectionStringName: String? = null
+    var database: SqlDatabase? = null
+    var sqlDatabaseAdminLogin: String? = null
+    var sqlDatabaseAdminPassword = charArrayOf()
 }
