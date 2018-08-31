@@ -319,7 +319,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
                 .flatMap { it.value }
                 .firstOrNull { it.id() == webAppId } ?: return
 
-        if (webApp.connectionStrings().containsKey(connectionStringName))
+        if (webApp.connectionStrings.containsKey(connectionStringName))
             throw RuntimeConfigurationError(String.format(CONNECTION_STRING_NAME_ALREADY_EXISTS, connectionStringName))
     }
 
