@@ -25,7 +25,7 @@ Feature requests can be logged in our [issue tracker](https://github.com/JetBrai
 ## Resources
 
 * [Issue tracker](https://github.com/JetBrains/azure-tools-for-intellij/issues)
-* [Plugin page](https://plugins.jetbrains.com/)
+* [Plugin page](https://plugins.jetbrains.com/plugin/11220-azure-toolkit-for-rider)
 
 ## History and differences with Microsoft Azure Toolkit for IntelliJ
 
