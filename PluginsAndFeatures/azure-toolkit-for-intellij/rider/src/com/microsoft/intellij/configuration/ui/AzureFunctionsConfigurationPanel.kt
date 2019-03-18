@@ -22,15 +22,24 @@
 
 package com.microsoft.intellij.configuration.ui
 
-import com.intellij.ide.BrowserUtil
+import com.intellij.ide.plugins.newui.TwoLineProgressIndicator
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.ui.TextComponentAccessor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import com.intellij.ui.components.labels.LinkLabel
+import com.intellij.openapi.ui.VerticalFlowLayout
+import com.intellij.ui.components.panels.OpaquePanel
 import com.intellij.util.ui.FormBuilder
+import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import com.microsoft.intellij.configuration.AzureRiderSettings
+import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
+import java.awt.CardLayout
+import java.awt.Dimension
 import java.io.File
+import javax.swing.JButton
+import javax.swing.JLabel
 import javax.swing.JPanel
 
 class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
@@ -51,20 +60,73 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
         )
     }
 
-    private val downloadCoreToolsLabel = LinkLabel<Any>("Download latest version from GitHub...", null) {
-        _, _ -> BrowserUtil.open("https://github.com/Azure/azure-functions-core-tools/releases")
-    }
+    private val currentVersionLabel = JLabel()
+    private val latestVersionLabel = JLabel()
+    private val installButton = JButton("Download latest version")
+            .apply {
+                isEnabled = false
+            }
+    private val installIndicator = TwoLineProgressIndicator()
+
+    private val wrapperLayout = CardLayout()
+    private val installActionPanel = OpaquePanel(wrapperLayout)
+            .apply {
+                add(installButton, "button")
+                add(installIndicator.component, "progress")
+            }
+
 
     init {
         coreToolsPathField.text = properties.getValue(
                 AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH,
                 "")
+
+        installIndicator.setCancelRunnable {
+            if (installIndicator.isRunning) installIndicator.stop()
+            wrapperLayout.show(installActionPanel, "button")
+        }
+
+        installButton.addActionListener {
+            wrapperLayout.show(installActionPanel, "progress")
+            FunctionsCoreToolsManager.downloadLatestRelease(installIndicator) {
+                UIUtil.invokeAndWaitIfNeeded(Runnable {
+                    coreToolsPathField.text = it
+                    wrapperLayout.show(installActionPanel, "button")
+                })
+
+                updateVersionLabels()
+            }
+        }
+
+        updateVersionLabels()
+    }
+
+    private fun updateVersionLabels() {
+        ApplicationManager.getApplication().executeOnPooledThread {
+            val local = FunctionsCoreToolsManager.determineVersion(coreToolsPathField.text)
+            val remote = FunctionsCoreToolsManager.determineLatestRemote()
+
+            UIUtil.invokeAndWaitIfNeeded(Runnable {
+                currentVersionLabel.text = local?.version ?: "<unknown>"
+                latestVersionLabel.text = remote?.version ?: "<unknown>"
+
+                installButton.isEnabled = local == null || remote != null && local < remote
+            })
+        }
     }
 
     override val panel = FormBuilder
             .createFormBuilder()
             .addLabeledComponent("Azure Functions Core Tools path:", coreToolsPathField)
-            .addComponentToRightColumn(downloadCoreToolsLabel)
+            .addLabeledComponent("Current version:", currentVersionLabel)
+            .addLabeledComponent("Latest available version:", latestVersionLabel)
+            .addComponentToRightColumn(OpaquePanel(VerticalFlowLayout(VerticalFlowLayout.TOP, 0, JBUI.scale(4), false, false))
+                    .apply {
+                        preferredSize = Dimension(JBUI.scale(400), JBUI.scale(100))
+
+                        add(installActionPanel)
+                    }
+            )
             .addComponentFillVertically(JPanel(), 0)
             .panel
 
