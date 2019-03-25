@@ -34,7 +34,7 @@ import com.jetbrains.rider.run.configurations.launchSettings.LaunchSettingsJsonS
 import com.jetbrains.rider.run.configurations.project.DotNetProjectConfiguration
 
 class AzureFunctionsHostConfigurationType: ConfigurationTypeBase("AzureFunctionsHost", "Azure Functions host",
-        "Azure Functions host", IconLoader.getIcon("icons/FunctionApp.svg")), IRunnableProjectConfigurationType, IRunConfigurationWithDefault {
+        "Azure Functions host", IconLoader.getIcon("icons/FunctionAppRunConfiguration.svg")), IRunnableProjectConfigurationType, IRunConfigurationWithDefault {
 
     companion object {
         fun isTypeApplicable(kind: RunnableProjectKind) =

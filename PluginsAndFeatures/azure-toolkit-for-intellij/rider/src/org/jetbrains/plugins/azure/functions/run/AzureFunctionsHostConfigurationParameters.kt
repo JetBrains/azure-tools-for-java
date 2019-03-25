@@ -144,21 +144,21 @@ open class AzureFunctionsHostConfigurationParameters(
     }
 
     private fun tryGetRunnableProject(): RunnableProject? {
-        val runnableProjects = project.solution.runnableProjectsModel.projects.valueOrNull
-        if (runnableProjects != null) {
-            val applicableProjects = runnableProjects.filter {
-                it.projectFilePath == projectFilePath && AzureFunctionsHostConfigurationType.isTypeApplicable(it.kind)
-            }
+        val runnableProjects = project.solution.runnableProjectsModel.projects.valueOrNull ?: return null
 
-            if (applicableProjects.size > 1) {
-                logger.warn("Multiple applicable runnable projects detected for .NET Project configuration ($projectFilePath): ${applicableProjects.joinToString("; ")}")
-            }
-
-            val runnableProject = applicableProjects.singleOrNull()
-            if (runnableProject != null) {
-                return AzureFunctionsRunnableProjectUtil.patchRunnableProjectOutputs(runnableProject)
-            }
+        val applicableProjects = runnableProjects.filter {
+            it.projectFilePath == projectFilePath && AzureFunctionsHostConfigurationType.isTypeApplicable(it.kind)
         }
+
+        if (applicableProjects.size > 1) {
+            logger.warn("Multiple applicable runnable projects detected for .NET Project configuration ($projectFilePath): ${applicableProjects.joinToString("; ")}")
+        }
+
+        val runnableProject = applicableProjects.singleOrNull()
+        if (runnableProject != null) {
+            return AzureFunctionsRunnableProjectUtil.patchRunnableProjectOutputs(runnableProject)
+        }
+
         return null
     }
 

@@ -68,8 +68,8 @@ class AzureFunctionsHostConfigurationFactory(type: ConfigurationType)
 
     override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration =
             AzureFunctionsHostConfiguration(name
-                    ?: "Azure Functions host", template.project, this, createParameters(template.project))
+                    ?: "Azure Functions", template.project, this, createParameters(template.project))
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration =
-            AzureFunctionsHostConfiguration("Azure Functions host", project, this, createParameters(project))
+            AzureFunctionsHostConfiguration("Azure Functions", project, this, createParameters(project))
 }
