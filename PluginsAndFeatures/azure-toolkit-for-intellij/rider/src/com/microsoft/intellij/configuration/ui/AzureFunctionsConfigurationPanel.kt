@@ -29,6 +29,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.ui.TextComponentAccessor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.VerticalFlowLayout
+import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.ui.components.panels.OpaquePanel
 import com.intellij.util.ui.FormBuilder
 import com.intellij.util.ui.JBUI
@@ -37,8 +38,8 @@ import com.microsoft.intellij.configuration.AzureRiderSettings
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
 import java.awt.CardLayout
 import java.awt.Dimension
+import java.awt.FlowLayout
 import java.io.File
-import javax.swing.JButton
 import javax.swing.JLabel
 import javax.swing.JPanel
 
@@ -62,17 +63,18 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
 
     private val currentVersionLabel = JLabel()
     private val latestVersionLabel = JLabel()
-    private val installButton = JButton("Download latest version")
+    private val installButton = LinkLabel<Any>("Download latest version", null) { _, _ -> installLatestCoreTools() }
             .apply {
                 isEnabled = false
             }
-    private val installIndicator = TwoLineProgressIndicator()
 
     private val wrapperLayout = CardLayout()
     private val installActionPanel = OpaquePanel(wrapperLayout)
             .apply {
-                add(installButton, "button")
-                add(installIndicator.component, "progress")
+                // TODO sdubov any ideas to align this nicely?
+                add(JPanel(FlowLayout(FlowLayout.LEFT, 0, JBUI.scale(32))).apply {
+                    add(installButton) }, "button")
+                add(TwoLineProgressIndicator().component, "progress")
             }
 
 
@@ -81,25 +83,28 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
                 AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH,
                 "")
 
+        updateVersionLabels()
+    }
+
+    private fun installLatestCoreTools()  {
+        val installIndicator = TwoLineProgressIndicator()
         installIndicator.setCancelRunnable {
             if (installIndicator.isRunning) installIndicator.stop()
             wrapperLayout.show(installActionPanel, "button")
         }
 
-        installButton.addActionListener {
-            wrapperLayout.show(installActionPanel, "progress")
-            FunctionsCoreToolsManager.downloadLatestRelease(installIndicator) {
-                UIUtil.invokeAndWaitIfNeeded(Runnable {
-                    coreToolsPathField.text = it
-                    installButton.isEnabled = false
-                    wrapperLayout.show(installActionPanel, "button")
-                })
+        installActionPanel.add(installIndicator.component, "progress")
+        wrapperLayout.show(installActionPanel, "progress")
 
-                updateVersionLabels()
-            }
+        FunctionsCoreToolsManager.downloadLatestRelease(installIndicator) {
+            UIUtil.invokeAndWaitIfNeeded(Runnable {
+                coreToolsPathField.text = it
+                installButton.isEnabled = false
+                wrapperLayout.show(installActionPanel, "button")
+            })
+
+            updateVersionLabels()
         }
-
-        updateVersionLabels()
     }
 
     private fun updateVersionLabels() {
@@ -120,7 +125,7 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
             .createFormBuilder()
             .addLabeledComponent("Azure Functions Core Tools path:", coreToolsPathField)
             .addLabeledComponent("Current version:", currentVersionLabel)
-            .addLabeledComponent("Latest available version:", latestVersionLabel)
+            .addLabeledComponent("Latest available version:", latestVersionLabel, JBUI.scale(8))
             .addComponentToRightColumn(OpaquePanel(VerticalFlowLayout(VerticalFlowLayout.TOP, 0, JBUI.scale(4), false, false))
                     .apply {
                         preferredSize = Dimension(JBUI.scale(400), JBUI.scale(100))

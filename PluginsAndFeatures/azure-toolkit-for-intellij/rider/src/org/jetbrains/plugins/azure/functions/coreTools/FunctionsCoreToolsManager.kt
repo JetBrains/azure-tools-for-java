@@ -36,10 +36,12 @@ import com.intellij.util.io.HttpRequests
 import com.intellij.util.io.ZipUtil
 import com.jetbrains.rd.util.error
 import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.warn
 import org.jetbrains.plugins.azure.functions.GitHubReleasesService
 import java.io.File
 
 object FunctionsCoreToolsManager {
+    private const val DOWNLOADTASK_TITLE = "Downloading latest Azure Functions Core Tools..."
     private const val CORETOOLS_DIR = "azure-functions-coretools"
     private const val LATEST_RELEASE_URL = "repos/Azure/azure-functions-core-tools/releases/latest"
 
@@ -48,18 +50,17 @@ object FunctionsCoreToolsManager {
     private val logger = getLogger<FunctionsCoreToolsManager>()
 
     fun downloadLatestRelease(indicator: ProgressIndicator, completed: (String) -> Unit) {
-        object : Task.Backgroundable(null, "Downloading latest Azure Functions Core Tools...", true) {
+        object : Task.Backgroundable(null, DOWNLOADTASK_TITLE, true) {
             override fun run(pi: ProgressIndicator) {
                 ApplicationManager.getApplication().executeOnPooledThread {
                     downloadLatestReleaseInternal(pi, completed)
-                    return@executeOnPooledThread
                 }
             }
         }.run(indicator)
     }
 
     fun downloadLatestRelease(project: Project, completed: (String) -> Unit): Task {
-        return object : Task.Backgroundable(project, "Downloading latest Azure Functions Core Tools...", true) {
+        return object : Task.Backgroundable(project, DOWNLOADTASK_TITLE, true) {
             override fun run(pi: ProgressIndicator) {
                 downloadLatestReleaseInternal(pi, completed)
             }
@@ -75,6 +76,9 @@ object FunctionsCoreToolsManager {
 
         val latestLocal = determineVersion(determineLatestLocalCoreToolsPath())
         val latestRemote = determineLatestRemote()
+        if (latestRemote == null) {
+            logger.error { "Could not determine latest remote version." }
+        }
         if (latestRemote == null || latestLocal?.compareTo(latestRemote) == 0) {
             pi.text = "Finished."
             if (pi.isRunning) pi.stop()
@@ -107,7 +111,7 @@ object FunctionsCoreToolsManager {
         pi.startNonCancelableSection()
         pi.text = "Preparing to extract..."
         pi.isIndeterminate = true
-        val latestDirectory = File(downloadPath + File.separator + latestRemote.version)
+        val latestDirectory = File(downloadPath).resolve(latestRemote.version)
         try {
             if (latestDirectory.exists()) latestDirectory.deleteRecursively()
         } catch (e: Exception) {
@@ -163,13 +167,22 @@ object FunctionsCoreToolsManager {
         if (coreToolsPath == null) return null
 
         val coreToolsExecutablePath = if (SystemInfo.isWindows) {
-            File(coreToolsPath + File.separator + "func.exe")
+            File(coreToolsPath).resolve("func.exe")
         } else {
-            File(coreToolsPath + File.separator + "func")
+            File(coreToolsPath).resolve("func")
         }
 
         try {
             if (coreToolsExecutablePath.exists()) {
+                if (!coreToolsExecutablePath.canExecute()) {
+                    logger.warn { "Updating executable flag for {$coreToolsPath}..." }
+                    try {
+                        coreToolsExecutablePath.setExecutable(true)
+                    } catch (s: SecurityException) {
+                        logger.error("Failed setting executable flag for {$coreToolsPath}", s)
+                    }
+                }
+
                 val commandLine = GeneralCommandLine()
                         .withExePath(coreToolsExecutablePath.path)
                         .withParameters("--version")
@@ -217,7 +230,7 @@ object FunctionsCoreToolsManager {
                 "win-x86"
             } else if (SystemInfo.isMac) {
                 "osx-x64"
-            } else if (SystemInfo.isMac) {
+            } else if (SystemInfo.isLinux) {
                 "linux-x64"
             } else {
                 "unknown"
