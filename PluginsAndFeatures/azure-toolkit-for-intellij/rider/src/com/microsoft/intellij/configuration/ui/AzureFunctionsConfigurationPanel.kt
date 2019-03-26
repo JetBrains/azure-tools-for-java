@@ -28,7 +28,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.ui.TextComponentAccessor
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.ui.components.panels.OpaquePanel
 import com.intellij.util.ui.FormBuilder
@@ -37,8 +36,6 @@ import com.intellij.util.ui.UIUtil
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
 import java.awt.CardLayout
-import java.awt.Dimension
-import java.awt.FlowLayout
 import java.io.File
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -71,9 +68,7 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
     private val wrapperLayout = CardLayout()
     private val installActionPanel = OpaquePanel(wrapperLayout)
             .apply {
-                // TODO sdubov any ideas to align this nicely?
-                add(JPanel(FlowLayout(FlowLayout.LEFT, 0, JBUI.scale(32))).apply {
-                    add(installButton) }, "button")
+                add(installButton, "button")
                 add(TwoLineProgressIndicator().component, "progress")
             }
 
@@ -126,13 +121,7 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
             .addLabeledComponent("Azure Functions Core Tools path:", coreToolsPathField)
             .addLabeledComponent("Current version:", currentVersionLabel)
             .addLabeledComponent("Latest available version:", latestVersionLabel, JBUI.scale(8))
-            .addComponentToRightColumn(OpaquePanel(VerticalFlowLayout(VerticalFlowLayout.TOP, 0, JBUI.scale(4), false, false))
-                    .apply {
-                        preferredSize = Dimension(JBUI.scale(400), JBUI.scale(100))
-
-                        add(installActionPanel)
-                    }
-            )
+            .addComponentToRightColumn(installActionPanel)
             .addComponentFillVertically(JPanel(), 0)
             .panel
 
