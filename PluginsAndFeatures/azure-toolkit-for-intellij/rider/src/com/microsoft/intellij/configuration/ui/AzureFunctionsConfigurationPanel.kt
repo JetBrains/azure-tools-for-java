@@ -91,6 +91,7 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
             FunctionsCoreToolsManager.downloadLatestRelease(installIndicator) {
                 UIUtil.invokeAndWaitIfNeeded(Runnable {
                     coreToolsPathField.text = it
+                    installButton.isEnabled = false
                     wrapperLayout.show(installActionPanel, "button")
                 })
 

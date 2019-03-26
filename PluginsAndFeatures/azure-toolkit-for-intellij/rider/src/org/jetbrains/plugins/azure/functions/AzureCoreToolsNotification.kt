@@ -26,60 +26,66 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.*
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
-import com.jetbrains.rider.projectView.notifications.SolutionLoadNotification
+import com.intellij.openapi.startup.StartupActivity
+import com.jetbrains.rd.util.reactive.adviseOnce
+import com.jetbrains.rdclient.util.idea.createLifetime
+import com.jetbrains.rider.model.RunnableProjectKind
+import com.jetbrains.rider.model.runnableProjectsModel
+import com.jetbrains.rider.projectView.solution
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
 import javax.swing.event.HyperlinkEvent
 
-class AzureCoreToolsNotification(project: Project) : SolutionLoadNotification(project) {
+class AzureCoreToolsNotification : StartupActivity {
     companion object {
         private val notificationGroup = NotificationGroup("AzureFunctions", NotificationDisplayType.BALLOON, true, null, null)
     }
 
-    override val settingName: String
-        get() = "AzureCoreToolsNotification"
+    override fun runActivity(project: Project) {
+        project.solution.runnableProjectsModel.projects.adviseOnce(project.createLifetime()) { runnableProjects ->
+            if (runnableProjects.any { it.kind == RunnableProjectKind.AzureFunctions }) {
+                val funcCoreToolsInfo = FunctionsCoreToolsInfoProvider.build()
 
-    override fun createNotification(): Notification? {
-        val funcCoreToolsInfo = FunctionsCoreToolsInfoProvider.build()
+                val local = FunctionsCoreToolsManager.determineVersion(funcCoreToolsInfo?.coreToolsPath)
+                val remote = FunctionsCoreToolsManager.determineLatestRemote()
 
-        val local = FunctionsCoreToolsManager.determineVersion(funcCoreToolsInfo?.coreToolsPath)
-        val remote = FunctionsCoreToolsManager.determineLatestRemote()
+                if (local == null || remote != null && local < remote) {
+                    val title = if (local == null) {
+                        "Install Azure Functions Core Tools"
+                    } else {
+                        "Update Azure Functions Core Tools"
+                    }
 
-        if (local == null || remote != null && local < remote) {
-            val title = if (local == null) {
-                "Install Azure Functions Core Tools"
-            } else {
-                "Update Azure Functions Core Tools"
-            }
+                    val description = if (local == null) {
+                        "<a href='install'>Install the Azure Functions Core Tools</a> to develop, run and debug Azure Functions locally."
+                    } else {
+                        "A newer version of the Azure Functions Core Tools is available. <a href='install'>Update now</a>"
+                    }
 
-            val description = if (local == null) {
-                "<a href='install'>Install the Azure Functions Core Tools</a> to develop, run and debug Azure Functions locally."
-            } else {
-                "A newer version of the Azure Functions Core Tools is available. <a href='install'>Update now</a>"
-            }
-
-            return notificationGroup.createNotification(
-                    title, null, description,
-                    NotificationType.INFORMATION,
-                    object : NotificationListener.Adapter() {
-                        override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {
-                            if (!project.isDisposed) {
-                                when (e.description) {
-                                    "install" -> {
-                                        ProgressManager.getInstance().run(
-                                            FunctionsCoreToolsManager.downloadLatestRelease(project) {
-                                                PropertiesComponent.getInstance().setValue(
-                                                        AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH, it)
-                                                notification.expire()
-                                            })
+                    val notification = notificationGroup.createNotification(
+                            title, null, description,
+                            NotificationType.INFORMATION,
+                            object : NotificationListener.Adapter() {
+                                override fun hyperlinkActivated(notification: Notification, e: HyperlinkEvent) {
+                                    if (!project.isDisposed) {
+                                        when (e.description) {
+                                            "install" -> {
+                                                ProgressManager.getInstance().run(
+                                                        FunctionsCoreToolsManager.downloadLatestRelease(project) {
+                                                            PropertiesComponent.getInstance().setValue(
+                                                                    AzureRiderSettings.PROPERTY_FUNCTIONS_CORETOOLS_PATH, it)
+                                                            notification.expire()
+                                                        })
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                        }
-                    })
-        }
+                            })
 
-        return null
+                    Notifications.Bus.notify(notification, project)
+                }
+            }
+        }
     }
 }
