@@ -52,11 +52,11 @@ object FunctionsCoreToolsInfoProvider {
         }
 
         if (!coreToolsExecutablePath.canExecute()) {
-            logger.warn { "Updating executable flag for {$coreToolsExecutablePath}..." }
+            logger.warn { "Updating executable flag for $coreToolsExecutablePath..." }
             try {
                 coreToolsExecutablePath.setExecutable(true)
             } catch (s: SecurityException) {
-                logger.error("Failed setting executable flag for {$coreToolsExecutablePath}", s)
+                logger.error("Failed setting executable flag for $coreToolsExecutablePath", s)
             }
         }
 

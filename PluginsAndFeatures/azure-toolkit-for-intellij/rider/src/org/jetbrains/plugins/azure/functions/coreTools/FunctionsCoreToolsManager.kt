@@ -117,7 +117,7 @@ object FunctionsCoreToolsManager {
         try {
             if (latestDirectory.exists()) latestDirectory.deleteRecursively()
         } catch (e: Exception) {
-            logger.error("Error while removing latest directory {$latestDirectory.path}", e)
+            logger.error("Error while removing latest directory $latestDirectory.path", e)
         }
 
         pi.text = "Extracting..."
@@ -125,7 +125,7 @@ object FunctionsCoreToolsManager {
         try {
             ZipUtil.extract(tempFile, latestDirectory, null)
         } catch (e: Exception) {
-            logger.error("Error while extracting {$tempFile.path} to {$latestDirectory.path}", e)
+            logger.error("Error while extracting $tempFile.path to $latestDirectory.path", e)
         }
 
         pi.text = "Cleaning up older versions..."
@@ -135,7 +135,7 @@ object FunctionsCoreToolsManager {
             try {
                 if (latestLocalDirectory.exists()) latestLocalDirectory.deleteRecursively()
             } catch (e: Exception) {
-                logger.error("Error while removing older version directory {$latestLocalDirectory.path}", e)
+                logger.error("Error while removing older version directory $latestLocalDirectory.path", e)
             }
         }
 
@@ -144,7 +144,7 @@ object FunctionsCoreToolsManager {
         try {
             if (tempFile.exists()) tempFile.delete()
         } catch (e: Exception) {
-            logger.error("Error while removing temporary file {$tempFile.path}", e)
+            logger.error("Error while removing temporary file $tempFile.path", e)
         }
 
 //      // TODO: Should we register project templates?
@@ -177,11 +177,11 @@ object FunctionsCoreToolsManager {
         try {
             if (coreToolsExecutablePath.exists()) {
                 if (!coreToolsExecutablePath.canExecute()) {
-                    logger.warn { "Updating executable flag for {$coreToolsPath}..." }
+                    logger.warn { "Updating executable flag for $coreToolsPath..." }
                     try {
                         coreToolsExecutablePath.setExecutable(true)
                     } catch (s: SecurityException) {
-                        logger.error("Failed setting executable flag for {$coreToolsPath}", s)
+                        logger.error("Failed setting executable flag for $coreToolsPath", s)
                     }
                 }
 
@@ -197,7 +197,7 @@ object FunctionsCoreToolsManager {
                 }
             }
         } catch (e: Exception) {
-            logger.error("Error while determining version of tools in {$coreToolsPath}", e)
+            logger.error("Error while determining version of tools in $coreToolsPath", e)
         }
 
         return null
