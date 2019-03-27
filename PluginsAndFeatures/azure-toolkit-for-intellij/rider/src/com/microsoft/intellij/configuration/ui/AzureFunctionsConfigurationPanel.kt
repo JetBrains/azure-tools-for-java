@@ -44,6 +44,17 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
 
     companion object {
         private const val DISPLAY_NAME = "Functions"
+
+        private const val PATH_TO_CORE_TOOLS = "Azure Functions Core Tools path:"
+        private const val CURRENT_VERSION = "Current version:"
+        private const val LATEST_VERSION = "Latest available version:"
+        private const val UNKNOWN = "<unknown>"
+
+        private const val PATH_TO_CORE_TOOLS_DESCRIPTION = "Path to Azure Functions Core Tools"
+        private const val INSTALL_LATEST = "Download latest version..."
+
+        private const val CARD_BUTTON = "button"
+        private const val CARD_PROGRESS = "progress"
     }
 
     private val properties = PropertiesComponent.getInstance()
@@ -51,16 +62,16 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
     private val coreToolsPathField = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(
                 "",
-                "Path to Azure Functions Core Tools",
+                PATH_TO_CORE_TOOLS_DESCRIPTION,
                 null,
                 FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                 TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT
         )
     }
 
-    private val currentVersionLabel = JLabel()
-    private val latestVersionLabel = JLabel()
-    private val installButton = LinkLabel<Any>("Download latest version", null) { _, _ -> installLatestCoreTools() }
+    private val currentVersionLabel = JLabel(UNKNOWN)
+    private val latestVersionLabel = JLabel(UNKNOWN)
+    private val installButton = LinkLabel<Any>(INSTALL_LATEST, null) { _, _ -> installLatestCoreTools() }
             .apply {
                 isEnabled = false
             }
@@ -68,8 +79,8 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
     private val wrapperLayout = CardLayout()
     private val installActionPanel = OpaquePanel(wrapperLayout)
             .apply {
-                add(installButton, "button")
-                add(TwoLineProgressIndicator().component, "progress")
+                add(installButton, CARD_BUTTON)
+                add(TwoLineProgressIndicator().component, CARD_PROGRESS)
             }
 
 
@@ -85,17 +96,17 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
         val installIndicator = TwoLineProgressIndicator()
         installIndicator.setCancelRunnable {
             if (installIndicator.isRunning) installIndicator.stop()
-            wrapperLayout.show(installActionPanel, "button")
+            wrapperLayout.show(installActionPanel, CARD_BUTTON)
         }
 
-        installActionPanel.add(installIndicator.component, "progress")
-        wrapperLayout.show(installActionPanel, "progress")
+        installActionPanel.add(installIndicator.component, CARD_PROGRESS)
+        wrapperLayout.show(installActionPanel, CARD_PROGRESS)
 
         FunctionsCoreToolsManager.downloadLatestRelease(installIndicator) {
             UIUtil.invokeAndWaitIfNeeded(Runnable {
                 coreToolsPathField.text = it
                 installButton.isEnabled = false
-                wrapperLayout.show(installActionPanel, "button")
+                wrapperLayout.show(installActionPanel, CARD_BUTTON)
             })
 
             updateVersionLabels()
@@ -108,8 +119,8 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
             val remote = FunctionsCoreToolsManager.determineLatestRemote()
 
             UIUtil.invokeAndWaitIfNeeded(Runnable {
-                currentVersionLabel.text = local?.version ?: "<unknown>"
-                latestVersionLabel.text = remote?.version ?: "<unknown>"
+                currentVersionLabel.text = local?.version ?: UNKNOWN
+                latestVersionLabel.text = remote?.version ?: UNKNOWN
 
                 installButton.isEnabled = local == null || remote != null && local < remote
             })
@@ -118,9 +129,9 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
 
     override val panel = FormBuilder
             .createFormBuilder()
-            .addLabeledComponent("Azure Functions Core Tools path:", coreToolsPathField)
-            .addLabeledComponent("Current version:", currentVersionLabel)
-            .addLabeledComponent("Latest available version:", latestVersionLabel, JBUI.scale(8))
+            .addLabeledComponent(PATH_TO_CORE_TOOLS, coreToolsPathField)
+            .addLabeledComponent(CURRENT_VERSION, currentVersionLabel)
+            .addLabeledComponent(LATEST_VERSION, latestVersionLabel, JBUI.scale(8))
             .addComponentToRightColumn(installActionPanel)
             .addComponentFillVertically(JPanel(), 0)
             .panel
