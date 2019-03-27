@@ -35,6 +35,7 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsManager
+import org.jetbrains.plugins.azure.functions.projectTemplating.FunctionsCoreToolsTemplateManager
 import java.awt.CardLayout
 import java.io.File
 import javax.swing.JLabel
@@ -103,6 +104,8 @@ class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
         wrapperLayout.show(installActionPanel, CARD_PROGRESS)
 
         FunctionsCoreToolsManager.downloadLatestRelease(installIndicator) {
+            FunctionsCoreToolsTemplateManager.tryReload()
+
             UIUtil.invokeAndWaitIfNeeded(Runnable {
                 coreToolsPathField.text = it
                 installButton.isEnabled = false
