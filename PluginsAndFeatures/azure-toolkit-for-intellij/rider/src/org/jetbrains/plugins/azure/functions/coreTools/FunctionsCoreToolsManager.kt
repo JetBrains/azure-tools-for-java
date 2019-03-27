@@ -34,8 +34,10 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.io.ZipUtil
+import com.jetbrains.rd.util.debug
 import com.jetbrains.rd.util.error
 import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.string.printToString
 import com.jetbrains.rd.util.warn
 import org.jetbrains.plugins.azure.functions.GitHubReleasesService
 import java.io.File
@@ -248,9 +250,9 @@ object FunctionsCoreToolsManager {
                 return AzureFunctionsCoreToolsRemoteAsset(latestReleaseVersion, latestAsset.name!!, latestAsset.browserDownloadUrl!!)
             }
         } catch (e: UnknownHostException) {
-            logger.error("Could not determine latest remote.", e)
+            logger.warn { "Could not determine latest remote: " + e.printToString() }
         } catch (e: IOException) {
-            logger.error("Could not determine latest remote.", e)
+            logger.warn { "Could not determine latest remote: " + e.printToString() }
         }
 
         return null
