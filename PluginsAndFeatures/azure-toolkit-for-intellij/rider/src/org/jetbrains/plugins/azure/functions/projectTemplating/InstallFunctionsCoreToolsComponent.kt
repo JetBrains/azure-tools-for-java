@@ -27,6 +27,8 @@ import com.intellij.util.ui.JBUI
 import com.jetbrains.rd.util.reactive.IProperty
 import com.jetbrains.rider.ui.components.ComponentFactories
 import com.jetbrains.rider.ui.components.base.Viewable
+import com.microsoft.intellij.AzureConfigurable.AZURE_CONFIGURABLE_PREFIX
+import com.microsoft.intellij.configuration.ui.AzureFunctionsConfigurationPanel
 import net.miginfocom.swing.MigLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -44,7 +46,7 @@ class InstallFunctionsCoreToolsComponent(private val validationError: IProperty<
             add(ComponentFactories.multiLineLabelPane("Rider requires the Azure Functions Core Tools to be installed and configured to create new Azure Functions projects."),
                     "growx, gapbottom ${JBUI.scale(1)}")
             add(ComponentFactories.hyperlinkLabel("Configure Azure Functions Core Tools...") {
-                ShowSettingsUtil.getInstance().showSettingsDialog(null, "preferences.sourceCode.Functions")
+                ShowSettingsUtil.getInstance().showSettingsDialog(null, AZURE_CONFIGURABLE_PREFIX + AzureFunctionsConfigurationPanel.DISPLAY_NAME)
                 validationError.set(null)
             })
         }

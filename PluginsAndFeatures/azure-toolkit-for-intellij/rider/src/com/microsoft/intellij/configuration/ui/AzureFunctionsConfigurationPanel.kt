@@ -44,7 +44,7 @@ import javax.swing.JPanel
 class AzureFunctionsConfigurationPanel: AzureRiderAbstractConfigurablePanel {
 
     companion object {
-        private const val DISPLAY_NAME = "Functions"
+        const val DISPLAY_NAME = "Functions"
 
         private const val PATH_TO_CORE_TOOLS = "Azure Functions Core Tools path:"
         private const val CURRENT_VERSION = "Current version:"
