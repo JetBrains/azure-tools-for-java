@@ -42,16 +42,15 @@ import com.jetbrains.rider.util.idea.getComponent
 
 class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
     companion object {
-        private val enableAzureFunctionsInstallMissingNupkg = "rider.enable.azure.functions.install.missing.nupkg"
+        private const val enableAzureFunctionsInstallMissingNupkg = "rider.enable.azure.functions.install.missing.nupkg"
 
-        private fun shouldProcess(projectFileIndex: ProjectFileIndex, file: VirtualFile?): Boolean =
-                file != null && file.exists() && projectFileIndex.isInContent(file)
+        private fun shouldProcess(projectFileIndex: ProjectFileIndex, file: VirtualFile): Boolean =
+                file.exists() && projectFileIndex.isInContent(file)
 
-        private fun hasKnownFileSuffix(file: VirtualFile?): Boolean =
-                file != null && (
-                        file.name.endsWith(".cs", true) ||
-                        file.name.endsWith(".vb", true) ||
-                        file.name.endsWith(".fs", true))
+        private fun hasKnownFileSuffix(file: VirtualFile): Boolean =
+                file.extension.equals("cs", true) ||
+                file.extension.equals("vb", true) ||
+                file.extension.equals("fs", true)
 
         private val knownMarkerWords = listOf(
                 "FunctionName",
@@ -80,12 +79,13 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                 val projectFileIndex = ProjectFileIndex.SERVICE.getInstance(project) ?: return
 
                 for (event in events) {
-                    if (shouldProcess(projectFileIndex, event.file) &&
-                            hasKnownFileSuffix(event.file) &&                // Only process certain file types
-                            event.requestor !is FileDocumentManagerImpl && // Don't process when typing in document
-                            event.file!!.length > 0) {
+                    val file = event.file ?: continue
 
-                        val file = event.file!!
+                    if (shouldProcess(projectFileIndex, file) &&
+                            hasKnownFileSuffix(file) && // Only process certain file types
+                            event.requestor !is FileDocumentManagerImpl && // Don't process when typing in document
+                            file.length > 0) {
+
                         ApplicationManager.getApplication().runReadAction {
                             val text = LoadTextUtil.loadText(file, 4096)
 
@@ -93,7 +93,7 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                             if (knownMarkerWords.any { text.contains(it, true) }) {
                                 // Determine project(s) to install into
                                 val installableProjects = project.getComponent<ProjectModelViewHost>()
-                                        .findProjectsWithVirtualFile(event.file!!)
+                                        .findProjectsWithVirtualFile(file)
 
                                 // For every known trigger name, verify required dependencies are installed
                                 for ((triggerName, dependency) in triggerMap) {
