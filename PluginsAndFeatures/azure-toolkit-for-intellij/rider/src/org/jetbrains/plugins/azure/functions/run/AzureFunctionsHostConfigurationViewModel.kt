@@ -78,6 +78,7 @@ class AzureFunctionsHostConfigurationViewModel(
 
     init {
         disable()
+
         projectSelector.bindTo(runnableProjectsModel, lifetime, { p -> type.isApplicable(p.kind) }, ::enable, ::handleProjectSelection)
 
         tfmSelector.string.advise(lifetime) { handleChangeTfmSelection() }
@@ -97,14 +98,21 @@ class AzureFunctionsHostConfigurationViewModel(
                 workingDirectorySelector.path.set(it.workingDirectory)
             }
             exePathSelector.defaultValue.set(it.exePath)
-            if (it.defaultArguments.isNotEmpty()) {
-                programParametersEditor.parametersString.set(ParametersListUtil.join(it.defaultArguments))
-                programParametersEditor.defaultValue.set(ParametersListUtil.join(it.defaultArguments))
-            } else {
-                programParametersEditor.parametersString.set("")
-                programParametersEditor.defaultValue.set("")
+
+            // Ensure we have the defaults if needed...
+            val patchedProjectOutput = AzureFunctionsRunnableProjectUtil.patchProjectOutput(it)
+
+            // ...but keep the previous value if it's not empty
+            if (programParametersEditor.parametersString.value.isNullOrEmpty()) {
+                if (patchedProjectOutput.defaultArguments.isNotEmpty()) {
+                    programParametersEditor.parametersString.set(ParametersListUtil.join(patchedProjectOutput.defaultArguments))
+                    programParametersEditor.defaultValue.set(ParametersListUtil.join(patchedProjectOutput.defaultArguments))
+                } else {
+                    programParametersEditor.parametersString.set("")
+                    programParametersEditor.defaultValue.set("")
+                }
             }
-            workingDirectorySelector.defaultValue.set(it.workingDirectory)
+            workingDirectorySelector.defaultValue.set(patchedProjectOutput.workingDirectory)
         }
     }
 
@@ -186,7 +194,7 @@ class AzureFunctionsHostConfigurationViewModel(
         this.trackProjectArguments = trackProjectArguments
         this.trackProjectWorkingDirectory = trackProjectWorkingDirectory
         runnableProjectsModel.projects.adviseOnce(lifetime) { projectList ->
-            val mappedProjectList = projectList.map(AzureFunctionsRunnableProjectUtil::patchRunnableProjectOutputs).toList()
+            val mappedProjectList = projectList //.map(AzureFunctionsRunnableProjectUtil::patchRunnableProjectOutputs).toList()
 
             urlEditor.defaultValue.value = dotNetStartBrowserParameters.url
             urlEditor.text.value = dotNetStartBrowserParameters.url
