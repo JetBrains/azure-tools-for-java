@@ -194,8 +194,6 @@ class AzureFunctionsHostConfigurationViewModel(
         this.trackProjectArguments = trackProjectArguments
         this.trackProjectWorkingDirectory = trackProjectWorkingDirectory
         runnableProjectsModel.projects.adviseOnce(lifetime) { projectList ->
-            val mappedProjectList = projectList //.map(AzureFunctionsRunnableProjectUtil::patchRunnableProjectOutputs).toList()
-
             urlEditor.defaultValue.value = dotNetStartBrowserParameters.url
             urlEditor.text.value = dotNetStartBrowserParameters.url
             dotNetBrowserSettingsEditor.settings.set(BrowserSettings(
@@ -203,12 +201,12 @@ class AzureFunctionsHostConfigurationViewModel(
                     dotNetStartBrowserParameters.withJavaScriptDebugger,
                     dotNetStartBrowserParameters.browser))
 
-            if (projectFilePath.isEmpty() || mappedProjectList.none {
+            if (projectFilePath.isEmpty() || projectList.none {
                         it.projectFilePath == projectFilePath && AzureFunctionsHostConfigurationType.isTypeApplicable(it.kind)
                     }) {
                 // Case when project didn't selected otherwise we should generate fake project to avoid drop user settings.
                 if (projectFilePath.isEmpty() || !isUnloadedProject) {
-                    mappedProjectList.firstOrNull { type.isApplicable(it.kind) }?.let { project ->
+                    projectList.firstOrNull { type.isApplicable(it.kind) }?.let { project ->
                         projectSelector.project.set(project)
                         isLoaded = true
                         handleProjectSelection(project)
@@ -222,14 +220,14 @@ class AzureFunctionsHostConfigurationViewModel(
                     )
                     projectSelector.projectList.apply {
                         clear()
-                        addAll(mappedProjectList + fakeProject)
+                        addAll(projectList + fakeProject)
                     }
                     projectSelector.project.set(fakeProject)
                     reloadTfmSelector(fakeProject)
                     resetProperties(exePath, programParameters, workingDirectory)
                 }
             } else {
-                mappedProjectList.singleOrNull {
+                projectList.singleOrNull {
                     it.projectFilePath == projectFilePath && AzureFunctionsHostConfigurationType.isTypeApplicable(it.kind)
                 }?.let { project ->
                     projectSelector.project.set(project)
