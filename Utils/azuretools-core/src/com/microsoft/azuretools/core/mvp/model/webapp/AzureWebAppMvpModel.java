@@ -37,18 +37,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import com.microsoft.azure.management.appservice.*;
 import org.apache.commons.io.IOUtils;
 
 import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.appservice.AppServicePlan;
-import com.microsoft.azure.management.appservice.DeploymentSlot;
-import com.microsoft.azure.management.appservice.OperatingSystem;
-import com.microsoft.azure.management.appservice.PricingTier;
-import com.microsoft.azure.management.appservice.PublishingProfileFormat;
-import com.microsoft.azure.management.appservice.RuntimeStack;
-import com.microsoft.azure.management.appservice.WebApp;
-import com.microsoft.azure.management.appservice.WebAppBase;
-import com.microsoft.azure.management.appservice.WebContainer;
 import com.microsoft.azure.management.resources.Subscription;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
 import com.microsoft.azuretools.authmanage.AuthMethodManager;
@@ -620,7 +612,7 @@ public class AzureWebAppMvpModel {
         file.createNewFile();
         try (InputStream inputStream = app.manager().inner().webApps()
                 .listPublishingProfileXmlWithSecrets(app.resourceGroupName(), app.name(),
-                        PublishingProfileFormat.FTP);
+                        new CsmPublishingProfileOptions().withFormat(PublishingProfileFormat.FTP));
              OutputStream outputStream = new FileOutputStream(file);
         ) {
             IOUtils.copy(inputStream, outputStream);
@@ -643,7 +635,7 @@ public class AzureWebAppMvpModel {
         file.createNewFile();
         try (final InputStream inputStream = slot.manager().inner().webApps()
             .listPublishingProfileXmlWithSecretsSlot(slot.resourceGroupName(), app.name(), slotName,
-                PublishingProfileFormat.FTP);
+                    new CsmPublishingProfileOptions().withFormat(PublishingProfileFormat.FTP));
              OutputStream outputStream = new FileOutputStream(file);
         ) {
             IOUtils.copy(inputStream, outputStream);

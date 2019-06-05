@@ -20,15 +20,10 @@
 
 package com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache;
 
+import java.util.List;
 import java.util.Map;
 
-import com.microsoft.azure.management.redis.RedisAccessKeys;
-import com.microsoft.azure.management.redis.RedisCache;
-import com.microsoft.azure.management.redis.RedisCachePremium;
-import com.microsoft.azure.management.redis.RedisFirewallRule;
-import com.microsoft.azure.management.redis.RedisKeyType;
-import com.microsoft.azure.management.redis.Sku;
-import com.microsoft.azure.management.redis.TlsVersion;
+import com.microsoft.azure.management.redis.*;
 import com.microsoft.azure.management.redis.implementation.RedisManager;
 import com.microsoft.azure.management.redis.implementation.RedisResourceInner;
 import com.microsoft.azure.management.resources.fluentcore.arm.Region;
@@ -196,4 +191,12 @@ public class RedisCacheMock implements RedisCache{
 	public Map<String, RedisFirewallRule> firewallRules() {
 		return null;
 	}
+
+    @Override
+    public List<ScheduleEntry> patchSchedules()  {
+        return null;
+    }
+
+    @Override
+    public void forceReboot(RebootType rebootType) { }
 }
