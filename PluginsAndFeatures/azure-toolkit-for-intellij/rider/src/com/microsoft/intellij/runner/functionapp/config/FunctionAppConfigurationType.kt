@@ -45,7 +45,7 @@ class FunctionAppConfigurationType : ConfigurationType {
     @Nls
     override fun getConfigurationTypeDescription() = RUN_CONFIG_TYPE_DESCRIPTION
 
-    override fun getIcon(): Icon = IconLoader.getIcon("icons/FunctionApp.svg")
+    override fun getIcon(): Icon = IconLoader.getIcon("/icons/FunctionApp.svg")
 
     override fun getConfigurationFactories() =
             arrayOf(FunctionAppConfigurationFactory(this))

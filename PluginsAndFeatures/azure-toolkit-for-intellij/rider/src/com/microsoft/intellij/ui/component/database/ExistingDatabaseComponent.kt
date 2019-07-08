@@ -78,7 +78,7 @@ class ExistingDatabaseComponent :
     private fun initSqlDatabaseComboBox() {
         cbDatabase.setDefaultRenderer(
                 EMPTY_SQL_DATABASES_MESSAGE,
-                IconLoader.getIcon("icons/Database.svg")) { database -> "${database.name()} (${database.resourceGroupName()})" }
+                IconLoader.getIcon("/icons/Database.svg")) { database -> "${database.name()} (${database.resourceGroupName()})" }
 
         cbDatabase.addActionListener {
             val database = cbDatabase.getSelectedValue() ?: return@addActionListener

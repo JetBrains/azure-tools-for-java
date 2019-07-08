@@ -68,8 +68,8 @@ class PublishFunctionAppPanel(private val lifetime: Lifetime,
         private const val TAB_WEB_APP_CONFIGURATION = "App Configuration"
         private const val TAB_DATABASE_CONNECTION = "Database Connection"
 
-        private val webAppIcon = IconLoader.getIcon("icons/FunctionApp.svg")
-        private val databaseIcon = IconLoader.getIcon("icons/Database.svg")
+        private val webAppIcon = IconLoader.getIcon("/icons/FunctionApp.svg")
+        private val databaseIcon = IconLoader.getIcon("/icons/Database.svg")
     }
 
     private val presenter = FunctionAppDeployViewPresenter<PublishFunctionAppPanel>()

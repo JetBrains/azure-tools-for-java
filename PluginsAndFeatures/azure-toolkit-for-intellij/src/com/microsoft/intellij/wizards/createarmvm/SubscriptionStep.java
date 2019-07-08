@@ -62,7 +62,7 @@ public class SubscriptionStep extends AzureWizardStep<VMWizardModel> implements 
 
         model.configStepList(createVmStepsList, 0);
 
-        buttonLogin.setIcon(IconLoader.getIcon("icons/Subscriptions.svg"));
+        buttonLogin.setIcon(IconLoader.getIcon("/icons/Subscriptions.svg"));
 
         buttonLogin.addActionListener(new ActionListener() {
             @Override

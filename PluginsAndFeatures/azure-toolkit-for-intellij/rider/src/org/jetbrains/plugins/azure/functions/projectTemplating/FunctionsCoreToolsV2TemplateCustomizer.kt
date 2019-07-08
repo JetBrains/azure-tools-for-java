@@ -31,7 +31,7 @@ class FunctionsCoreToolsV2TemplateCustomizer : ReSharperProjectTemplateCustomize
         get() = "Azure Functions"
 
     override val newIcon: Icon
-        get() = IconLoader.getIcon("icons/TemplateAzureFunc.svg")
+        get() = IconLoader.getIcon("/icons/TemplateAzureFunc.svg")
 
     override val newName: String
         get() = "Azure Functions"

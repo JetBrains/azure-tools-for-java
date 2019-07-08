@@ -245,7 +245,7 @@ public class AzureNewDockerWizardDialog extends WizardDialog<AzureNewDockerWizar
         "Stop Create Docker Host",
         JOptionPane.YES_NO_OPTION,
         JOptionPane.QUESTION_MESSAGE,
-        IconLoader.getIcon("icons/AzureWarning.svg"),
+        IconLoader.getIcon("/icons/AzureWarning.svg"),
         new String[]{"Cancel", "OK"},
         null);
   }

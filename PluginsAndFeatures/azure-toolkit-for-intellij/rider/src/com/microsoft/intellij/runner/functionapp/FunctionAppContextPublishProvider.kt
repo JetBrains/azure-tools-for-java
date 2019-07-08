@@ -41,7 +41,7 @@ class FunctionAppContextPublishProvider : RiderContextPublishProvider {
     }
 
     override val icon: Icon
-        get() = IconLoader.getIcon("icons/Azure.svg")
+        get() = IconLoader.getIcon("/icons/Azure.svg")
 
     override val name: String
         get() = RUN_CONFIG_NAME

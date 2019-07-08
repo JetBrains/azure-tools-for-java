@@ -62,8 +62,8 @@ open class ExistingAppsTableComponent<T : WebAppBase> :
         private const val TABLE_LOADING_MESSAGE = "Loading ... "
         private const val TABLE_EMPTY_MESSAGE = "No available apps."
 
-        private val osWindowsIcon = IconLoader.getIcon("icons/OSWindows.svg")
-        private val osLinuxIcon = IconLoader.getIcon("icons/OSLinux.svg")
+        private val osWindowsIcon = IconLoader.getIcon("/icons/OSWindows.svg")
+        private val osLinuxIcon = IconLoader.getIcon("/icons/OSLinux.svg")
     }
 
     val table = initExistingAppsTable()

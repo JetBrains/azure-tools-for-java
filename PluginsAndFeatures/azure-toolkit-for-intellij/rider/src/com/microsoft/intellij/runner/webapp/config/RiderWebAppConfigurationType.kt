@@ -43,7 +43,7 @@ class RiderWebAppConfigurationType : ConfigurationType {
     @Nls
     override fun getConfigurationTypeDescription() = RUN_CONFIG_TYPE_DESCRIPTION
 
-    override fun getIcon(): Icon = IconLoader.getIcon("icons/publishAzure.svg")
+    override fun getIcon(): Icon = IconLoader.getIcon("/icons/publishAzure.svg")
 
     override fun getConfigurationFactories() =
             arrayOf(RiderWebAppConfigurationFactory(this))
