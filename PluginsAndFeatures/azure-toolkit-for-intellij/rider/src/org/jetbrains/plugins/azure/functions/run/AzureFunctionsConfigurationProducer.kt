@@ -64,7 +64,7 @@ class AzureFunctionsConfigurationProducer
                         configuration.name = prjToConfigure.fullName
                     } else {
                         configuration.name = prjToConfigure.fullName + "." + functionName
-                        configuration.parameters.functionNames = functionName ?: ""
+                        configuration.parameters.functionNames = functionName
                     }
 
                     configuration.parameters.projectFilePath = prjToConfigure.projectFilePath
