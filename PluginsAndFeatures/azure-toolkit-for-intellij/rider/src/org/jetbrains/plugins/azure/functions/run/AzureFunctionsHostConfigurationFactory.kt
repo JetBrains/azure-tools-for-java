@@ -63,6 +63,7 @@ class AzureFunctionsHostConfigurationFactory(type: ConfigurationType)
                     true,
                     RunnableProjectKind.None,
                     "",
+                    "",
                     DotNetStartBrowserParameters()
             )
 
