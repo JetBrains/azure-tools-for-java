@@ -30,29 +30,40 @@ import java.io.File
 object HostJsonPatcher {
     private val logger = getLogger<HostJsonPatcher>()
 
+    private fun determineHostJsonFile(workingDirectory: String): File? {
+        val candidates = listOf(
+                File(workingDirectory, "host.json"),
+                File(workingDirectory, "../host.json"),
+                File(workingDirectory, "../../host.json")
+        )
+
+        return candidates.firstOrNull { it.exists() }
+    }
+
     fun tryPatchHostJsonFile(workingDirectory: String, functionNames: String) {
-        val hostJsonFile = File(workingDirectory, "../host.json")
+        val hostJsonFile = determineHostJsonFile(workingDirectory)
 
-        logger.info("Patching " + hostJsonFile.absolutePath + " - exists? " + hostJsonFile.exists())
-        if (hostJsonFile.exists()) {
-            logger.info("Function names: $functionNames")
+        if (hostJsonFile == null) {
+            logger.warn("Could not find host.json file to patch.")
+            return
+        }
 
-            try {
-                val gson = GsonBuilder().setPrettyPrinting().create()
-                val hostJson = gson.fromJson(hostJsonFile.readText(), JsonElement::class.java).asJsonObject
+        logger.info("Patching " + hostJsonFile.absolutePath + " with function names: $functionNames")
+        try {
+            val gson = GsonBuilder().setPrettyPrinting().create()
+            val hostJson = gson.fromJson(hostJsonFile.readText(), JsonElement::class.java).asJsonObject
 
-                val functionsArray = JsonArray()
-                functionNames.split(',', ';', '|', ' ')
-                        .map { it.trim() }
-                        .filter { it.isNotBlank() }
-                        .forEach { functionsArray.add(JsonPrimitive(it)) }
+            val functionsArray = JsonArray()
+            functionNames.split(',', ';', '|', ' ')
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
+                    .forEach { functionsArray.add(JsonPrimitive(it)) }
 
-                hostJson.add("functions", functionsArray)
+            hostJson.add("functions", functionsArray)
 
-                hostJsonFile.writeText(gson.toJson(hostJson))
-            } catch (e: JsonParseException) {
-                logger.error(e)
-            }
+            hostJsonFile.writeText(gson.toJson(hostJson))
+        } catch (e: JsonParseException) {
+            logger.error(e)
         }
     }
 }
