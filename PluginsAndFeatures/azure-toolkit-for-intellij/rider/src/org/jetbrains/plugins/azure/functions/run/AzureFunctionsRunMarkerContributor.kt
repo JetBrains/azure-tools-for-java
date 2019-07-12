@@ -18,13 +18,22 @@ class AzureFunctionsRunMarkerContributor: RunLineMarkerContributor() {
 
             if (element.text != "[") return null
 
-            val functionNameSibling = element.siblings(forward = true)
+            val functionNameAttributeSibling = element.siblings(forward = true)
                     .takeWhile { it.text != "]" }
-                    .firstOrNull { it.text.equals("FunctionName") || it.text.equals("FunctionNameAttribute") }
+                    .firstOrNull { it.text == "FunctionName" || it.text == "FunctionNameAttribute" }
                     ?: return null
 
-            // Case 1: [FunctionName("Foo")]
-            val functionNameStringLiteralSibling = functionNameSibling.siblings(forward = true)
+            val functionNameAttributeClosingRBracketSibling = functionNameAttributeSibling.siblings(forward = true)
+                    .firstOrNull { it.text == "]" }
+                    ?: return null
+
+            // Case 0: Do not be tricked by having a FunctionNameAttribute applied on an identifier,
+            //         e.g. `[FunctionName("Foo")]string bar` should not match.
+            if (functionNameAttributeClosingRBracketSibling.nextSibling.type == CSharpTokenType.IDENTIFIER)
+                return null
+
+            // Case 1: [FunctionName("Foo")] - take the string content
+            val functionNameStringLiteralSibling = functionNameAttributeSibling.siblings(forward = true)
                     .takeWhile { it.text != "]" && it.text != ")" }
                     .firstOrNull { it is CSharpStringLiteralExpression }
                     ?.children?.firstOrNull { it.type == CSharpTokenType.STRING_LITERAL_REGULAR }
@@ -33,10 +42,10 @@ class AzureFunctionsRunMarkerContributor: RunLineMarkerContributor() {
                 return functionNameStringLiteralSibling.text?.replace("\"", "")
             }
 
-            // Case 2: [FunctionName(nameof(Foo))]
-            val nameofLiteralSibling = functionNameSibling.siblings(forward = true)
+            // Case 2: [FunctionName(nameof(Foo.Bar))] - take the last identifier
+            val nameofLiteralSibling = functionNameAttributeSibling.siblings(forward = true)
                     .takeWhile { it.text != "]" && it.text != ")" }
-                    .firstOrNull { it.text.equals("nameof") }
+                    .firstOrNull { it.text == "nameof" }
 
             if (nameofLiteralSibling != null) {
                 val nameofFunctionNameLiteralSibling = nameofLiteralSibling.siblings(forward = true)
