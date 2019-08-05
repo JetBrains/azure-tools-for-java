@@ -24,6 +24,7 @@ package com.microsoft.intellij.helpers.deploy
 
 import com.jetbrains.rider.util.idea.getLogger
 import com.microsoft.azure.management.appservice.PublishingProfile
+import com.microsoft.azure.management.appservice.WebAppBase
 import com.microsoft.intellij.helpers.UiConstants
 import com.microsoft.intellij.runner.RunProcessHandler
 import com.microsoft.intellij.runner.utils.AppDeploySession
@@ -42,6 +43,26 @@ object KuduClient {
     private const val SLEEP_TIME_MS = 5000L
     private const val DEPLOY_TIMEOUT_MS = 180000L
     private const val UPLOADING_MAX_TRY = 3
+
+    /**
+     * Method to publish specified ZIP file to Azure server. We make up to 3 tries for uploading a ZIP file.
+     *
+     * Note: Azure SDK supports a native [FunctionApp.zipDeploy(File)] method. Hoverer, we cannot use it for files with BOM
+     *       Method throws an exception while reading the JSON file that contains BOM. Use our own implementation until fixed
+     *
+     * @param zipFile - zip file instance to be published
+     * @param processHandler - a process handler to show a process message
+     *
+     * @throws [RuntimeException] in case REST request was not succeed or timed out after 3 attempts
+     */
+    fun kuduZipDeploy(zipFile: File, publishingProfile: PublishingProfile, appName: String, kuduWebApp: WebAppBase, processHandler: RunProcessHandler) {
+
+        val kuduBaseUrl = "https://" + kuduWebApp.defaultHostName().toLowerCase()
+                .replace("http://", "")
+                .replace(kuduWebApp.name().toLowerCase(), kuduWebApp.name().toLowerCase() + ".scm")
+
+        kuduZipDeploy(zipFile, publishingProfile, appName, kuduBaseUrl, processHandler)
+    }
 
     /**
      * Method to publish specified ZIP file to Azure server. We make up to 3 tries for uploading a ZIP file.

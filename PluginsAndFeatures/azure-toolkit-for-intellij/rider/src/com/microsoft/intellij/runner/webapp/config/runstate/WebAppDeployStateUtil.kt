@@ -199,11 +199,7 @@ object WebAppDeployStateUtil {
 
             webAppStop(webApp, processHandler)
 
-            val kuduBaseUrl = "https://" + webApp.defaultHostName().toLowerCase()
-                    .replace("http://", "")
-                    .replace(webApp.name().toLowerCase(), webApp.name().toLowerCase() + ".scm")
-
-            KuduClient.kuduZipDeploy(zipFile, webApp.publishingProfile, webApp.name(), kuduBaseUrl, processHandler)
+            KuduClient.kuduZipDeploy(zipFile, webApp.publishingProfile, webApp.name(), webApp, processHandler)
 
             if (zipFile.exists()) {
                 processHandler.setText(String.format(UiConstants.ZIP_FILE_DELETING, zipFile.path))
