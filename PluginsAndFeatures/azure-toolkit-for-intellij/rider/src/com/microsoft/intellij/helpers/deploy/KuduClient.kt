@@ -55,13 +55,14 @@ object KuduClient {
      *
      * @throws [RuntimeException] in case REST request was not succeed or timed out after 3 attempts
      */
-    fun kuduZipDeploy(zipFile: File, publishingProfile: PublishingProfile, appName: String, kuduWebApp: WebAppBase, processHandler: RunProcessHandler) {
+    fun kuduZipDeploy(zipFile: File, app: WebAppBase, processHandler: RunProcessHandler) {
 
-        val kuduBaseUrl = "https://" + kuduWebApp.defaultHostName().toLowerCase()
+        val appName = app.name()
+        val kuduBaseUrl = "https://" + app.defaultHostName().toLowerCase()
                 .replace("http://", "")
-                .replace(kuduWebApp.name().toLowerCase(), kuduWebApp.name().toLowerCase() + ".scm")
+                .replace(app.name().toLowerCase(), app.name().toLowerCase() + ".scm")
 
-        kuduZipDeploy(zipFile, publishingProfile, appName, kuduBaseUrl, processHandler)
+        kuduZipDeploy(zipFile, app.publishingProfile, appName, kuduBaseUrl, processHandler)
     }
 
     /**
