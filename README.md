@@ -18,7 +18,7 @@ The plugin can be downloaded and installed in JetBrains Rider and is available [
 * Basic management of virtual machines (create/delete, start/stop, view details)
 * Basic management of web apps and deployment slots (create/delete, start/stop, view details, edit settings, swap slot)
 * Basic management of function apps and deployment slots (create/delete, start/stop, view details, edit settings, swap slot)
-* Azure Resource Manager (list/expand resource groups, deploy ARM template, import/export parameter file)
+* Azure Resource Manager (list/expand resource groups, deploy ARM template, import/export parameter file, edit deployment)
 * Run configuration to deploy function apps and ASP.NET web apps (can also provision SQL database)
   * ASP.NET Core web apps (any platform)
   * .NET framework web apps (Windows)
