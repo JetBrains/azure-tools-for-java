@@ -52,11 +52,14 @@ class AzureFunctionsConfigurationProducer
         if (projects != null) {
             for (prj in projects) {
                 if (AzureFunctionsHostConfigurationType.isTypeApplicable(prj.kind)) {
-                    if ((selectedItem != null && prj.projectFilePath == FileUtil.toSystemIndependentName(selectedItem.getFile()?.path ?: ""))
-                            || (!isInProject(prj.projectFilePath, selectedElement?.containingFile?.virtualFile?.path))) continue
+                    val isProjectFile = selectedItem != null && prj.projectFilePath == FileUtil.toSystemIndependentName(selectedItem.getFile()?.path ?: "")
+                    val isInProject = isInProject(prj.projectFilePath, selectedElement?.containingFile?.virtualFile?.path)
 
                     val functionName = AzureFunctionsRunMarkerContributor.tryResolveAzureFunctionName(selectedElement)
 
+                    if ((!isProjectFile && functionName.isNullOrBlank()) || !isInProject) continue
+
+                    // Create run configuration
                     val prjToConfigure = AzureFunctionsRunnableProjectUtil.patchRunnableProjectOutputs(prj)
                     val projectOutput = prjToConfigure.projectOutputs.singleOrNull()
 
