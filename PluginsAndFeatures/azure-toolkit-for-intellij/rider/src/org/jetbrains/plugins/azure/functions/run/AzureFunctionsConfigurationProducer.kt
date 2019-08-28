@@ -44,43 +44,43 @@ class AzureFunctionsConfigurationProducer
     override fun setupConfigurationFromContext(configuration: AzureFunctionsHostConfiguration,
                                                context: ConfigurationContext, sourceElement: Ref<PsiElement>): Boolean {
 
-        val selectedItem = context.getSelectedProject()
+        val selectedProject = context.getSelectedProject()
         val selectedElement = context.location?.psiElement
-        if (selectedItem == null && selectedElement == null) return false
+        if (selectedProject == null && selectedElement == null) return false
 
-        val projects = context.project.solution.runnableProjectsModel.projects.valueOrNull
-        if (projects != null) {
-            for (prj in projects) {
-                if (AzureFunctionsHostConfigurationType.isTypeApplicable(prj.kind)) {
-                    val isProjectFile = selectedItem != null && prj.projectFilePath == FileUtil.toSystemIndependentName(selectedItem.getFile()?.path ?: "")
-                    val isInProject = isInProject(prj.projectFilePath, selectedElement?.containingFile?.virtualFile?.path)
+        val projects = context.project.solution.runnableProjectsModel.projects.valueOrNull ?: return false
 
-                    val functionName = AzureFunctionsRunMarkerContributor.tryResolveAzureFunctionName(selectedElement)
+        for (project in projects) {
+            if (AzureFunctionsHostConfigurationType.isTypeApplicable(project.kind)) {
+                val isProjectFile = selectedProject != null && project.projectFilePath == FileUtil.toSystemIndependentName(selectedProject.getFile()?.path ?: "")
+                val isInProject = isInProject(project.projectFilePath, selectedElement?.containingFile?.virtualFile?.path)
 
-                    if ((!isProjectFile && functionName.isNullOrBlank()) || !isInProject) continue
+                val functionName = AzureFunctionsRunMarkerContributor.tryResolveAzureFunctionName(selectedElement)
 
-                    // Create run configuration
-                    val prjToConfigure = AzureFunctionsRunnableProjectUtil.patchRunnableProjectOutputs(prj)
-                    val projectOutput = prjToConfigure.projectOutputs.singleOrNull()
+                if ((!isProjectFile && functionName.isNullOrBlank()) || !isInProject) continue
 
-                    if (functionName.isNullOrBlank()) {
-                        configuration.name = prjToConfigure.fullName
-                    } else {
-                        configuration.name = prjToConfigure.fullName + "." + functionName
-                        configuration.parameters.functionNames = functionName
-                    }
+                // Create run configuration
+                val prjToConfigure = AzureFunctionsRunnableProjectUtil.patchRunnableProjectOutputs(project)
+                val projectOutput = prjToConfigure.projectOutputs.singleOrNull()
 
-                    configuration.parameters.projectFilePath = prjToConfigure.projectFilePath
-                    configuration.parameters.projectKind = prjToConfigure.kind
-                    configuration.parameters.projectTfm = projectOutput?.tfm ?: ""
-                    configuration.parameters.exePath = projectOutput?.exePath ?: ""
-                    configuration.parameters.programParameters = ParametersListUtil.join(projectOutput?.defaultArguments
-                            ?: listOf())
-                    configuration.parameters.workingDirectory = projectOutput?.workingDirectory ?: ""
-                    return true
+                if (functionName.isNullOrBlank()) {
+                    configuration.name = prjToConfigure.fullName
+                } else {
+                    configuration.name = prjToConfigure.fullName + "." + functionName
+                    configuration.parameters.functionNames = functionName
                 }
+
+                configuration.parameters.projectFilePath = prjToConfigure.projectFilePath
+                configuration.parameters.projectKind = prjToConfigure.kind
+                configuration.parameters.projectTfm = projectOutput?.tfm ?: ""
+                configuration.parameters.exePath = projectOutput?.exePath ?: ""
+                configuration.parameters.programParameters = ParametersListUtil.join(projectOutput?.defaultArguments
+                        ?: listOf())
+                configuration.parameters.workingDirectory = projectOutput?.workingDirectory ?: ""
+                return true
             }
         }
+
         return false
     }
 
