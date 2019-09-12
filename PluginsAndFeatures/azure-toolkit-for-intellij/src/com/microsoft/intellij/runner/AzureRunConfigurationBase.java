@@ -32,7 +32,6 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.Accessor;
-import com.intellij.util.xmlb.SerializationFilter;
 import com.intellij.util.xmlb.SerializationFilterBase;
 import com.intellij.util.xmlb.XmlSerializer;
 import org.jdom.Element;
@@ -40,6 +39,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class AzureRunConfigurationBase<T> extends RunConfigurationBase {
+
+    public static final String UNNAMED = "Unnamed";
+
     private boolean firstTimeCreated = true;
 
     protected AzureRunConfigurationBase(@NotNull Project project, @NotNull ConfigurationFactory factory, @Nullable String name) {

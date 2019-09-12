@@ -52,6 +52,14 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         return RiderWebAppRunState(project, myModel)
     }
 
+    override fun onNewConfigurationCreated() {
+        super.onNewConfigurationCreated()
+
+        if (name.equals(UNNAMED, true)) {
+            name = this.factory?.type?.displayName ?: UNNAMED
+        }
+    }
+
     override fun validate() { }
 
     override fun readExternal(element: Element) {

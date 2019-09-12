@@ -67,10 +67,17 @@ class AzureFunctionsHostConfigurationFactory(type: ConfigurationType)
                     startBrowserParameters = DotNetStartBrowserParameters()
             )
 
-    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration =
-            AzureFunctionsHostConfiguration(name
-                    ?: "Azure Functions", template.project, this, createParameters(template.project))
-
     override fun createTemplateConfiguration(project: Project): RunConfiguration =
-            AzureFunctionsHostConfiguration("Azure Functions", project, this, createParameters(project))
+            AzureFunctionsHostConfiguration(
+                    name = "Azure Functions host",
+                    project = project,
+                    factory = this,
+                    parameters = createParameters(project))
+
+    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration =
+            AzureFunctionsHostConfiguration(
+                    name = name ?: "Azure Functions host",
+                    project = template.project,
+                    factory = this,
+                    parameters = createParameters(template.project))
 }

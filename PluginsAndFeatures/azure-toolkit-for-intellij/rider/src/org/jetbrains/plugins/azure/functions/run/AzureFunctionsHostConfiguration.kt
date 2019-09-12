@@ -28,6 +28,7 @@ import com.jetbrains.rider.debugger.IRiderDebuggable
 import com.jetbrains.rider.run.configurations.RiderRunConfiguration
 import com.jetbrains.rider.runtime.RiderDotNetActiveRuntimeHost
 import com.jetbrains.rider.util.idea.getComponent
+import com.microsoft.intellij.runner.AzureRunConfigurationBase
 import org.jdom.Element
 
 class AzureFunctionsHostConfiguration(
@@ -46,6 +47,14 @@ class AzureFunctionsHostConfiguration(
 ), IRiderDebuggable {
 
     private val riderDotNetActiveRuntimeHost = project.getComponent<RiderDotNetActiveRuntimeHost>()
+
+    override fun onNewConfigurationCreated() {
+        super.onNewConfigurationCreated()
+
+        if (name.equals(AzureRunConfigurationBase.UNNAMED, true)) {
+            name = this.factory?.type?.displayName ?: AzureRunConfigurationBase.UNNAMED
+        }
+    }
 
     override fun checkConfiguration() {
         super.checkConfiguration()

@@ -48,6 +48,14 @@ class FunctionAppConfiguration(project: Project, factory: ConfigurationFactory, 
     override fun getConfigurationEditor() = FunctionAppSettingEditor(project, this)
     override fun getState(executor: Executor, executionEnvironment: ExecutionEnvironment) = FunctionAppRunState(project, myModel)
 
+    override fun onNewConfigurationCreated() {
+        super.onNewConfigurationCreated()
+
+        if (name.equals(UNNAMED, true)) {
+            name = this.factory?.type?.displayName ?: UNNAMED
+        }
+    }
+
     override fun validate() { }
 
     override fun readExternal(element: Element) {
