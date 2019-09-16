@@ -39,6 +39,10 @@ import org.jdom.Element
 class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, name: String?) :
         AzureRunConfigurationBase<DotNetWebAppSettingModel>(project, factory, name) {
 
+    companion object {
+        private const val SUGGESTED_NAME_PREFIX = "Publish Azure Web App"
+    }
+
     private val myModel = DotNetWebAppSettingModel()
 
     override fun getSubscriptionId() = myModel.webAppModel.subscription?.subscriptionId() ?: ""
@@ -52,13 +56,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         return RiderWebAppRunState(project, myModel)
     }
 
-    override fun onNewConfigurationCreated() {
-        super.onNewConfigurationCreated()
-
-        if (name.equals(UNNAMED, true)) {
-            name = this.factory?.type?.displayName ?: UNNAMED
-        }
-    }
+    override fun suggestedName(): String? = SUGGESTED_NAME_PREFIX + " - " + project.name
 
     override fun validate() { }
 

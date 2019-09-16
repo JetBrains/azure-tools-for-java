@@ -38,6 +38,10 @@ import org.jdom.Element
 class FunctionAppConfiguration(project: Project, factory: ConfigurationFactory, name: String?) :
         AzureRunConfigurationBase<FunctionAppSettingModel>(project, factory, name) {
 
+    companion object {
+        private const val SUGGESTED_NAME_PREFIX = "Publish Azure Function App"
+    }
+
     private val myModel = FunctionAppSettingModel()
 
     override fun getSubscriptionId() = myModel.functionAppModel.subscription?.subscriptionId() ?: ""
@@ -48,13 +52,7 @@ class FunctionAppConfiguration(project: Project, factory: ConfigurationFactory, 
     override fun getConfigurationEditor() = FunctionAppSettingEditor(project, this)
     override fun getState(executor: Executor, executionEnvironment: ExecutionEnvironment) = FunctionAppRunState(project, myModel)
 
-    override fun onNewConfigurationCreated() {
-        super.onNewConfigurationCreated()
-
-        if (name.equals(UNNAMED, true)) {
-            name = this.factory?.type?.displayName ?: UNNAMED
-        }
-    }
+    override fun suggestedName(): String? = SUGGESTED_NAME_PREFIX + " - " + project.name
 
     override fun validate() { }
 

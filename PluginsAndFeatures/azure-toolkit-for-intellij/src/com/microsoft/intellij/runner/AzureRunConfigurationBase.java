@@ -24,6 +24,7 @@
 package com.microsoft.intellij.runner;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.LocatableConfiguration;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.openapi.options.ConfigurationException;
@@ -38,9 +39,9 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class AzureRunConfigurationBase<T> extends RunConfigurationBase {
+import java.util.List;
 
-    public static final String UNNAMED = "Unnamed";
+public abstract class AzureRunConfigurationBase<T> extends RunConfigurationBase implements LocatableConfiguration {
 
     private boolean firstTimeCreated = true;
 
@@ -66,6 +67,17 @@ public abstract class AzureRunConfigurationBase<T> extends RunConfigurationBase 
         this.firstTimeCreated = firstTimeCreated;
     }
 
+    @Nullable
+    @Override
+    public String suggestedName() {
+        return null;
+    }
+
+    @Override
+    public boolean isGeneratedName() {
+        return false;
+    }
+
     @Override
     public void readExternal(Element element) throws InvalidDataException {
         super.readExternal(element);
@@ -89,5 +101,10 @@ public abstract class AzureRunConfigurationBase<T> extends RunConfigurationBase 
 
     @Override
     public void checkConfiguration() throws RuntimeConfigurationException {
+    }
+
+    @Override
+    public void setBeforeRunTasks(@NotNull List value) {
+        super.setBeforeRunTasks(value);
     }
 }
