@@ -39,7 +39,7 @@ class FunctionAppConfiguration(project: Project, factory: ConfigurationFactory, 
         AzureRunConfigurationBase<FunctionAppSettingModel>(project, factory, name) {
 
     companion object {
-        private const val SUGGESTED_NAME_PREFIX = "Publish Azure Function App"
+        private const val SUGGESTED_NAME_PREFIX = "Publish"
     }
 
     private val myModel = FunctionAppSettingModel()

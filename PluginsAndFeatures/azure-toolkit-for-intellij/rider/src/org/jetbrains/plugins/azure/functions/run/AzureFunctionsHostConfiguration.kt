@@ -46,7 +46,7 @@ class AzureFunctionsHostConfiguration(
 ), IRiderDebuggable {
 
     companion object {
-        private const val SUGGESTED_NAME_PREFIX = "Run Azure Functions"
+        private const val SUGGESTED_NAME_PREFIX = "Run"
     }
 
     private val riderDotNetActiveRuntimeHost = project.getComponent<RiderDotNetActiveRuntimeHost>()

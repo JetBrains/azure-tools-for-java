@@ -40,7 +40,7 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         AzureRunConfigurationBase<DotNetWebAppSettingModel>(project, factory, name) {
 
     companion object {
-        private const val SUGGESTED_NAME_PREFIX = "Publish Azure Web App"
+        private const val SUGGESTED_NAME_PREFIX = "Publish"
     }
 
     private val myModel = DotNetWebAppSettingModel()
