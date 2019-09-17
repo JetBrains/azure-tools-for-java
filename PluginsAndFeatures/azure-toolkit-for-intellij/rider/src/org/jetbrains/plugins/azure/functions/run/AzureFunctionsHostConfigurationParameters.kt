@@ -147,7 +147,7 @@ open class AzureFunctionsHostConfigurationParameters(
         }
     }
 
-    private fun tryGetRunnableProject(): RunnableProject? {
+    internal fun tryGetRunnableProject(): RunnableProject? {
         val runnableProjects = project.solution.runnableProjectsModel.projects.valueOrNull ?: return null
 
         val applicableProjects = runnableProjects.filter {

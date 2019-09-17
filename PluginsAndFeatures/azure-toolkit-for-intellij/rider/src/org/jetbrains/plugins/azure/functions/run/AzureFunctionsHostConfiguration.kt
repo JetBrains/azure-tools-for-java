@@ -51,11 +51,20 @@ class AzureFunctionsHostConfiguration(
 
     private val riderDotNetActiveRuntimeHost = project.getComponent<RiderDotNetActiveRuntimeHost>()
 
-    override fun suggestedName(): String? = SUGGESTED_NAME_PREFIX + " - " + project.name
+    override fun isGeneratedName(): Boolean = name.startsWith("$SUGGESTED_NAME_PREFIX - ")
+    override fun suggestedName(): String? {
+        return parameters.tryGetRunnableProject()?.let {
+            return "$SUGGESTED_NAME_PREFIX - ${it.name}"
+        } ?: "$SUGGESTED_NAME_PREFIX - ${project.name}"
+    }
 
     override fun checkConfiguration() {
         super.checkConfiguration()
         parameters.validate(riderDotNetActiveRuntimeHost)
+
+        if (isGeneratedName) {
+            suggestedName()?.let { name = it }
+        }
     }
 
     override fun readExternal(element: Element) {

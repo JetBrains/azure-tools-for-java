@@ -52,7 +52,12 @@ class FunctionAppConfiguration(project: Project, factory: ConfigurationFactory, 
     override fun getConfigurationEditor() = FunctionAppSettingEditor(project, this)
     override fun getState(executor: Executor, executionEnvironment: ExecutionEnvironment) = FunctionAppRunState(project, myModel)
 
-    override fun suggestedName(): String? = SUGGESTED_NAME_PREFIX + " - " + project.name
+    override fun isGeneratedName(): Boolean = name.startsWith("$SUGGESTED_NAME_PREFIX - ")
+    override fun suggestedName(): String? {
+        return myModel.functionAppModel.publishableProject?.let {
+            return "$SUGGESTED_NAME_PREFIX - ${it.projectName}"
+        } ?: "$SUGGESTED_NAME_PREFIX - ${project.name}"
+    }
 
     override fun validate() { }
 
@@ -87,6 +92,10 @@ class FunctionAppConfiguration(project: Project, factory: ConfigurationFactory, 
                     subscriptionId = myModel.functionAppModel.subscription?.subscriptionId() ?: "",
                     appId = myModel.functionAppModel.appId,
                     connectionStringName = myModel.databaseModel.connectionStringName)
+        }
+
+        if (isGeneratedName) {
+            suggestedName()?.let { name = it }
         }
     }
 }

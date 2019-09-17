@@ -56,7 +56,12 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         return RiderWebAppRunState(project, myModel)
     }
 
-    override fun suggestedName(): String? = SUGGESTED_NAME_PREFIX + " - " + project.name
+    override fun isGeneratedName(): Boolean = name.startsWith("$SUGGESTED_NAME_PREFIX - ")
+    override fun suggestedName(): String? {
+        return myModel.webAppModel.publishableProject?.let {
+            return "$SUGGESTED_NAME_PREFIX - ${it.projectName}"
+        } ?: "$SUGGESTED_NAME_PREFIX - ${project.name}"
+    }
 
     override fun validate() { }
 
@@ -89,6 +94,10 @@ class RiderWebAppConfiguration(project: Project, factory: ConfigurationFactory, 
         if (myModel.databaseModel.isDatabaseConnectionEnabled) {
             WebAppConfigValidator.checkConnectionStringNameExistence(
                     myModel.databaseModel.connectionStringName, myModel.webAppModel.appId)
+        }
+
+        if (isGeneratedName) {
+            suggestedName()?.let { name = it }
         }
     }
 }
