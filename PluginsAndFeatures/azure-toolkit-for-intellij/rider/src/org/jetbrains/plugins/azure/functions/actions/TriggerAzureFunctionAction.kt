@@ -58,7 +58,7 @@ class TriggerAzureFunctionAction(private val functionName: String) : AnAction("T
                                 "\n" +
                                 "# You call the following administrator endpoint to trigger non-HTTP functions:\n" +
                                 "\n" +
-                                "GET http://localhost:7071/admin/functions/$functionName\n" +
+                                "POST http://localhost:7071/admin/functions/$functionName\n" +
                                 "Content-Type: application/json\n" +
                                 "\n" +
                                 "{}\n",
