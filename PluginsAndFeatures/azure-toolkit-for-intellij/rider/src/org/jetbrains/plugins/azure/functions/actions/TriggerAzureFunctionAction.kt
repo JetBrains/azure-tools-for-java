@@ -30,7 +30,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.ws.http.request.HttpRequestLanguage
 import icons.RestClientIcons
 
-class TriggerAzureFunctionAction(private val functionName: String) : AnAction("Trigger $functionName function...", "Create trigger function HTTP request...", RestClientIcons.Http_requests_filetype) {
+class TriggerAzureFunctionAction(private val functionName: String) : AnAction("Trigger '$functionName' function...", "Create trigger function HTTP request...", RestClientIcons.Http_requests_filetype) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 
