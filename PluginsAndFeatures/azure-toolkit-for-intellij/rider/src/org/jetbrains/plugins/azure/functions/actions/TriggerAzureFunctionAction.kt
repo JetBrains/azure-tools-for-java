@@ -22,15 +22,26 @@
 
 package org.jetbrains.plugins.azure.functions.actions
 
+import com.jetbrains.rider.util.idea.getLogger
+import com.intellij.ide.fileTemplates.FileTemplateManager
 import com.intellij.ide.scratch.ScratchFileService
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.project.Project
 import com.intellij.ws.http.request.HttpRequestLanguage
 import icons.RestClientIcons
+import java.io.IOException
 
-class TriggerAzureFunctionAction(private val functionName: String) : AnAction("Trigger '$functionName' function...", "Create trigger function HTTP request...", RestClientIcons.Http_requests_filetype) {
+class TriggerAzureFunctionAction(private val functionName: String)
+    : AnAction("Trigger '$functionName' function...", "Create trigger function HTTP request...", RestClientIcons.Http_requests_filetype) {
+
+    companion object {
+        private val TEMPLATE_NAME = "Trigger Azure Function"
+        private val logger by lazy { getLogger<TriggerAzureFunctionAction>() }
+    }
+
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 
@@ -42,30 +53,25 @@ class TriggerAzureFunctionAction(private val functionName: String) : AnAction("T
                         project,
                         scratchFileName,
                         HttpRequestLanguage.INSTANCE,
-                        "# Trigger Azure Function - $functionName\n" +
-                                "#\n" +
-                                "# More information can be found in the Azure Functions documentation,\n" +
-                                "# as well as examples on how to pass test data to a function:\n" +
-                                "# https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local#passing-test-data-to-a-function\n" +
-                                "#\n" +
-                                "# Make sure to update the below calls to suit your function host and port.\n" +
-                                "#\n" +
-                                "# Call the following endpoint to locally run HTTP and webhook triggered functions:\n" +
-                                "\n" +
-                                "GET http://localhost:7071/api/$functionName\n" +
-                                "\n" +
-                                "###\n" +
-                                "\n" +
-                                "# Call the following administrator endpoint to trigger non-HTTP functions:\n" +
-                                "\n" +
-                                "POST http://localhost:7071/admin/functions/$functionName\n" +
-                                "Content-Type: application/json\n" +
-                                "\n" +
-                                "{}\n",
+                        createContentFromTemplate(project, TEMPLATE_NAME, functionName) ?: "",
                         ScratchFileService.Option.create_if_missing)
 
         if (scratchFile != null) {
             FileEditorManager.getInstance(project).openFile(scratchFile, true)
         }
+    }
+
+    private fun createContentFromTemplate(project: Project, templateName: String, functionName: String): String? {
+        val template = FileTemplateManager.getInstance(project).findInternalTemplate(templateName)
+        if (template != null) {
+            try {
+                val properties = FileTemplateManager.getInstance(project).defaultProperties
+                properties.setProperty("functionName", functionName)
+                return template.getText(properties)
+            } catch (e: IOException) {
+                logger.warn(e)
+            }
+        }
+        return null
     }
 }
