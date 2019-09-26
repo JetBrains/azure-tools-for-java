@@ -50,13 +50,13 @@ class TriggerAzureFunctionAction(private val functionName: String) : AnAction("T
                                 "#\n" +
                                 "# Make sure to update the below calls to suit your function host and port.\n" +
                                 "#\n" +
-                                "# You call the following endpoint to locally run HTTP and webhook triggered functions:\n" +
+                                "# Call the following endpoint to locally run HTTP and webhook triggered functions:\n" +
                                 "\n" +
                                 "GET http://localhost:7071/api/$functionName\n" +
                                 "\n" +
                                 "###\n" +
                                 "\n" +
-                                "# You call the following administrator endpoint to trigger non-HTTP functions:\n" +
+                                "# Call the following administrator endpoint to trigger non-HTTP functions:\n" +
                                 "\n" +
                                 "POST http://localhost:7071/admin/functions/$functionName\n" +
                                 "Content-Type: application/json\n" +
