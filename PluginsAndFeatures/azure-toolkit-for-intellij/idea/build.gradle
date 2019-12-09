@@ -39,17 +39,6 @@ intellij {
     downloadSources = Boolean.valueOf(sources)
 }
 
-checkstyle {
-    toolVersion = '8.24'
-    configFile = new File(rootProject.projectDir, 'config/checkstyle/checkstyle.xml')
-    showViolations = false
-}
-
-findbugs {
-    toolVersion = "3.0.1"
-    ignoreFailures = true
-}
-
 test {
     testLogging.showStandardStreams = true
     testLogging {
