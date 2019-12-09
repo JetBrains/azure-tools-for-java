@@ -32,7 +32,7 @@ class AzureFunctionsVersionInspection : XmlSuppressableInspectionTool() {
 
                                     // https://docs.microsoft.com/en-us/azure/azure-functions/functions-versions
                                     SetVersionQuickFix("v2"),
-                                    SetVersionQuickFix("v3-preview"))
+                                    SetVersionQuickFix("v3"))
                         }
                     }
                 }
