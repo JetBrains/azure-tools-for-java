@@ -53,7 +53,7 @@ abstract class SelectSparkApplicationTypeAction
         fun getRunConfigurationType() : ConfigurationType? {
             return when(getSelectedSparkApplicationType()) {
                 SparkApplicationType.None -> null
-                SparkApplicationType.HDInsight -> com.microsoft.azure.hdinsight.spark.run.configuration.LivySparkBatchJobRunConfigurationType.getInstance()
+                SparkApplicationType.HDInsight -> LivySparkBatchJobRunConfigurationType.getInstance()
                 SparkApplicationType.CosmosSpark -> CosmosSparkConfigurationType
                 SparkApplicationType.CosmosServerlessSpark -> CosmosServerlessSparkConfigurationType
                 SparkApplicationType.ArisSpark -> ArisSparkConfigurationType

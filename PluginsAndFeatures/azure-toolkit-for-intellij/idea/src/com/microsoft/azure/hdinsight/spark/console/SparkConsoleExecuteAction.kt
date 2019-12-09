@@ -79,6 +79,9 @@ class SparkConsoleExecuteAction() : AzureAnAction(), DumbAware, ILogger {
         runInWriteAction {
             val range = TextRange(0, document.textLength)
 
+            // Add prompt before input commands
+            consoleDetail.console.print("scala> ", ConsoleViewContentType.NORMAL_OUTPUT)
+
             editor.selectionModel.setSelection(range.startOffset, range.endOffset)
             langConsole?.addToHistory(range, langConsole.consoleEditor, true)
             consoleDetail.model.addToHistory(text)

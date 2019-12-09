@@ -33,7 +33,6 @@ import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.project.Project
 import com.microsoft.azure.arcadia.sdk.common.livy.interactive.ArcadiaSparkSession
 import com.microsoft.azure.hdinsight.common.logger.ILogger
-import com.microsoft.azure.hdinsight.spark.console.SparkScalaConsoleBuilder
 import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunConfiguration
 import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunConfigurationFactory
 import com.microsoft.azure.hdinsight.spark.console.SparkScalaLivyConsoleRunProfileState
@@ -60,7 +59,8 @@ class ArcadiaSparkScalaLivyConsoleRunConfiguration(project: Project,
 
         val session = ArcadiaSparkSession(
                 name, URI.create(livyUrl), sparkCluster.subscription.tenantId, sparkCluster.workSpace.name)
-        return SparkScalaLivyConsoleRunProfileState(SparkScalaConsoleBuilder(project), session)
+
+        return SparkScalaLivyConsoleRunProfileState(consoleBuilder, session)
     }
 
     override fun checkRunnerSettings(runner: ProgramRunner<*>, runnerSettings: RunnerSettings?, configurationPerRunnerSettings: ConfigurationPerRunnerSettings?) {

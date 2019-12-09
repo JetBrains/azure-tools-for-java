@@ -32,7 +32,6 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.ide.BrowserUtil
 import com.microsoft.azure.hdinsight.common.MessageInfoType
 import com.microsoft.azure.hdinsight.common.classifiedexception.ClassifiedExceptionFactory
-import com.microsoft.azure.hdinsight.common.classifiedexception.*
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitModel
 import com.microsoft.azure.hdinsight.spark.common.YarnDiagnosticsException
 import com.microsoft.azure.hdinsight.spark.ui.ConsoleViewWithMessageBars
