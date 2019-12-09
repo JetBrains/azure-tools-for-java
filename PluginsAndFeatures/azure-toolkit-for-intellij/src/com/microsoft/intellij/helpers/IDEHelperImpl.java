@@ -350,14 +350,10 @@ public class IDEHelperImpl implements IDEHelper {
 
     public void openLinkInBrowser(@NotNull String url) {
         try {
-            Desktop.getDesktop().browse(URI.create(url));
+            BrowserUtil.browse(url);
         } catch (Throwable e) {
-            try {
-                BrowserUtil.browse(url);
-            } catch (Throwable e) {
-                DefaultLoader.getUIHelper().logError("Unexpected exception: " + e.getMessage(), e);
-                throw new RuntimeException("Browse web app exception", e);
-            }
+            DefaultLoader.getUIHelper().logError("Unexpected exception: " + e.getMessage(), e);
+            throw new RuntimeException("Browse web app exception", e);
         }
     }
 }

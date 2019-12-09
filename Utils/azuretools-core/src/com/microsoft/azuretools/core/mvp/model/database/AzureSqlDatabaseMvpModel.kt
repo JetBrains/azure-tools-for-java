@@ -22,7 +22,7 @@
 
 package com.microsoft.azuretools.core.mvp.model.database
 
-import com.microsoft.azure.management.sql.DatabaseEditions
+import com.microsoft.azure.management.sql.DatabaseEdition
 import com.microsoft.azure.management.sql.ServiceObjectiveName
 import com.microsoft.azure.management.sql.SqlDatabase
 import com.microsoft.azure.management.sql.SqlServer
@@ -32,7 +32,6 @@ import com.microsoft.azuretools.core.mvp.model.ResourceEx
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel.listSqlServers
 import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel.refreshSubscriptionToSqlServerMap
 import java.io.IOException
-import java.lang.reflect.Modifier
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
@@ -128,7 +127,7 @@ object AzureSqlDatabaseMvpModel {
     fun createSqlDatabase(databaseName: String,
                           sqlServer: SqlServer,
                           collation: String = DEFAULT_COLLATION,
-                          edition: DatabaseEditions = DatabaseEditions.BASIC,
+                          edition: DatabaseEdition = DatabaseEdition.BASIC,
                           serviceObjectiveName: ServiceObjectiveName = ServiceObjectiveName.BASIC) =
             sqlServer.databases()
                     .define(databaseName)
@@ -136,21 +135,4 @@ object AzureSqlDatabaseMvpModel {
                     .withServiceObjective(serviceObjectiveName)
                     .withCollation(collation)
                     .create()
-
-    fun listDatabaseEditions(): List<DatabaseEditions> {
-        val databaseEditions = mutableListOf<DatabaseEditions>()
-        val editions = DatabaseEditions::class.java.declaredFields
-        val editionsArraySize = editions.size
-
-        for (editionIndex in 0 until editionsArraySize) {
-            val field = editions[editionIndex]
-            val modifier = field.modifiers
-            if (Modifier.isPublic(modifier) && Modifier.isStatic(modifier) && Modifier.isFinal(modifier)) {
-                val pt = field.get(null as Any?) as DatabaseEditions
-                databaseEditions.add(pt)
-            }
-        }
-
-        return databaseEditions
-    }
 }

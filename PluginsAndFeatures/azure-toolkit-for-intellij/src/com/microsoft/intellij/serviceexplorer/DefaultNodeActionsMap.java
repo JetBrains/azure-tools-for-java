@@ -107,8 +107,7 @@ public class DefaultNodeActionsMap extends NodeActionsMap {
 //                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
 //
 //        node2Actions.put(DeploymentSlotNode.class, new ImmutableList.Builder<Class<? extends NodeActionListener>>()
-//                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build());
-
+//                .add(StartStreamingLogsAction.class).add(StopStreamingLogsAction.class).build())
     }
 
     @Override
