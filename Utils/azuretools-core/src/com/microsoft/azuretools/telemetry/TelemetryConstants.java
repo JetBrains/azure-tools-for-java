@@ -43,10 +43,12 @@ public class TelemetryConstants {
     public static final String SPARK_ON_COSMOS = "sparkOnCosmos";
     public static final String SPARK_ON_COSMOS_SERVERLESS = "sparkOnCosmosServerless";
     public static final String SPARK_ON_SQL_SERVER = "sparkOnSqlServer";
+    public static final String SPARK_ON_ARCADIA = "sparkOnArcadia";
     public static final String SPARK_FAILURE_TASK_DEBUG = "sparkFailureTaskDebug";
     public static final String VFS = "virtualFileSystem";
 
     // operation value
+    public static final String SURVEY = "survey";
     public static final String FEEDBACK = "feedback";
     public static final String AZURECODE_SAMPLES = "azure-code-samples";
     public static final String LIB_CONFIGURATION = "libraries-configuration";
@@ -149,6 +151,9 @@ public class TelemetryConstants {
     public static final String CREATE_NEW_RUN_CONFIG = "create-new-run-config";
     public static final String RUN_SPARK_LIVY_INTERACTIVE_CONSOLE = "run-spark-livy-interactive-console";
     public static final String RUN_SPARK_LOCAL_CONSOLE = "run-spark-local-console";
+    public static final String PROVISION_A_CLUSTER = "provision-a-cluster";
+    public static final String DELETE_A_CLUSTER = "delete-a-cluster";
+    public static final String UPDATE_A_CLUSTER = "update-a-cluster";
 
     // property name
     public static final String WEBAPP_DEPLOY_TO_SLOT = "webappDeployToSlot";

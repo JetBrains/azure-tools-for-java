@@ -27,6 +27,7 @@ import com.microsoft.azure.hdinsight.common.MessageInfoType;
 import com.microsoft.azure.hdinsight.common.logger.ILogger;
 import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail;
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail;
+import com.microsoft.azure.hdinsight.sdk.cluster.MfaEspCluster;
 import com.microsoft.azure.hdinsight.sdk.common.*;
 import com.microsoft.azure.hdinsight.sdk.rest.azure.serverless.spark.models.ApiVersion;
 import com.microsoft.azure.hdinsight.sdk.storage.*;
@@ -60,6 +61,7 @@ public class SparkBatchJobDeployFactory implements ILogger {
     }
 
     public Deployable buildSparkBatchJobDeploy(@NotNull SparkSubmitModel submitModel,
+                                               @NotNull IClusterDetail clusterDetail,
                                                @NotNull Observer<AbstractMap.SimpleImmutableEntry<MessageInfoType, String>> ctrlSubject) throws ExecutionException {
 
         // get storage account and access token from submitModel
@@ -70,8 +72,6 @@ public class SparkBatchJobDeployFactory implements ILogger {
         HttpObservable httpObservable = null;
         Deployable jobDeploy = null;
         String clusterName = submitModel.getSubmissionParameter().getClusterName();
-        IClusterDetail clusterDetail = ClusterManagerEx.getInstance().getClusterDetailByName(clusterName)
-                .orElseThrow(() -> new ExecutionException("Can't find cluster named " + clusterName));
 
         SparkSubmitStorageType storageAcccountType = submitModel.getJobUploadStorageModel().getStorageAccountType();
         String subscription = submitModel.getJobUploadStorageModel().getSelectedSubscription();
@@ -110,17 +110,21 @@ public class SparkBatchJobDeployFactory implements ILogger {
                 try {
                     clusterDetail.getConfigurationInfo();
                     storageAccount = clusterDetail.getStorageAccount();
-
                     if (storageAccount.getAccountType() == StorageAccountType.ADLSGen2) {
                         String rawStoragePath = ((ClusterDetail) clusterDetail).getDefaultStorageRootPath();
                         destinationRootPath = String.format("%s/%s/", ADLSGen2FSOperation.converToGen2Path(URI.create(rawStoragePath)),
                                 SparkSubmissionContentPanel.Constants.submissionFolder);
-                        accessKey = ((ADLSGen2StorageAccount) storageAccount).getPrimaryKey();
-                        if (StringUtils.isBlank(accessKey)) {
-                            throw new ExecutionException("Cannot get valid access key for storage account");
+
+                        if (clusterDetail instanceof MfaEspCluster) {
+                            httpObservable = new ADLSGen2OAuthHttpObservable(clusterDetail.getSubscription().getTenantId());
+                        } else {
+                            accessKey = ((ADLSGen2StorageAccount) storageAccount).getPrimaryKey();
+                            httpObservable = new SharedKeyHttpObservable(storageAccount.getName(), accessKey);
+                            if (StringUtils.isBlank(accessKey)) {
+                                throw new ExecutionException("Cannot get valid access key for storage account");
+                            }
                         }
 
-                        httpObservable = new SharedKeyHttpObservable(storageAccount.getName(), accessKey);
                         jobDeploy = new ADLSGen2Deploy(httpObservable, destinationRootPath);
                     } else if (storageAccount.getAccountType() == StorageAccountType.BLOB ||
                             storageAccount.getAccountType() == StorageAccountType.ADLS) {

@@ -34,7 +34,7 @@ import com.microsoft.azuretools.azurecommons.helpers.Nullable;
 import java.io.IOException;
 import java.util.List;
 
-public interface IClusterDetail {
+public interface IClusterDetail extends ComparableCluster {
 
     default boolean isEmulator() {
         return false;
@@ -46,6 +46,10 @@ public interface IClusterDetail {
     String getName();
 
     String getTitle();
+
+    default String getClusterIdForConfiguration() {
+        return getName();
+    }
 
     default String getState() {
         return null;

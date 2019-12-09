@@ -130,15 +130,23 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
 
     @Override
     public void destroy() {
-        getSparkJob().killBatchJob().subscribe(
-                job -> log().trace("Killed Spark batch job " + job.getBatchId()),
-                err -> log().warn("Got error when killing Spark batch job", err),
-                () -> {}
-        );
-
-        this.isDestroyed = true;
-
-        this.disconnect();
+        if (!isDestroyed()) {
+            getSparkJob().killBatchJob()
+                    .doOnEach(notification -> {
+                        if (notification.isOnError()) {
+                            getCtrlSubject().onError(notification.getThrowable());
+                        } else if (notification.isOnNext()) {
+                            getEventSubject().onNext(new SparkBatchJobKilledEvent());
+                        }
+                        this.isDestroyed = true;
+                        this.disconnect();
+                    })
+                    .subscribe(
+                            job -> log().info("Killed Spark batch job " + job.getBatchId()),
+                            err -> log().warn("Got error when killing Spark batch job", err),
+                            () -> {}
+                    );
+        }
     }
 
     @NotNull
@@ -189,12 +197,14 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     }
 
     public void disconnect() {
-        this.isDisconnected = true;
+        if (!isDisconnected()) {
+            this.isDisconnected = true;
 
-        this.ctrlSubject.onCompleted();
-        this.eventSubject.onCompleted();
+            this.ctrlSubject.onCompleted();
+            this.eventSubject.onCompleted();
 
-        this.getJobSubscription().ifPresent(Subscription::unsubscribe);
+            this.getJobSubscription().ifPresent(Subscription::unsubscribe);
+        }
     }
 
     protected void ctrlInfo(String message) {
@@ -224,8 +234,9 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     protected Observable<? extends ISparkBatchJob> prepareArtifact() {
         return getSparkJob()
                 .deploy(artifactPath)
+                .doOnNext(job -> getEventSubject().onNext(new SparkBatchJobArtifactUploadedEvent()))
                 .onErrorResumeNext(err -> {
-                    Throwable rootCause = err.getCause() != null ? err.getCause() : err;
+                    Throwable rootCause = err instanceof RuntimeException && err.getCause() != null ? err.getCause() : err;
                     return Observable.error(new SparkJobUploadArtifactException("Failed to upload Spark application artifacts: " + rootCause.getMessage(), rootCause));
                 })
                 .subscribeOn(schedulers.processBarVisibleAsync("Deploy the jar file into cluster"));
@@ -234,9 +245,9 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     protected Observable<? extends ISparkBatchJob> submitJob(ISparkBatchJob sparkJob) {
         return sparkJob
                 .submit()
+                .doOnNext(job -> eventSubject.onNext(new SparkBatchJobSubmittedEvent(job)))
                 .subscribeOn(schedulers.processBarVisibleAsync("Submit the Spark batch job"))
-                .flatMap(this::startJobSubmissionLogReceiver)   // To receive the Livy submission log
-                .doOnNext(job -> eventSubject.onNext(new SparkBatchJobSubmittedEvent(job)));
+                .flatMap(this::startJobSubmissionLogReceiver);   // To receive the Livy submission log
     }
 
     @NotNull
@@ -259,11 +270,18 @@ public class SparkBatchJobRemoteProcess extends Process implements ILogger {
     Observable<SimpleImmutableEntry<String, String>> awaitForJobDone(ISparkBatchJob runningJob) {
         return runningJob.awaitDone()
                 .subscribeOn(schedulers.processBarVisibleAsync("Spark batch job " + getTitle() + " is running"))
-                .flatMap(jobStateDiagnosticsPair -> runningJob
-                        .awaitPostDone()
-                        .subscribeOn(schedulers.processBarVisibleAsync(
-                                "Waiting for " + getTitle() + " log aggregation is done"))
-                        .map(any -> jobStateDiagnosticsPair));
+                .doOnNext(jobStateDiagnosticsPair ->
+                        getEventSubject().onNext(
+                                new SparkBatchJobFinishedEvent(
+                                        getSparkJob().isSuccess(jobStateDiagnosticsPair.getKey()),
+                                        jobStateDiagnosticsPair.getKey(),
+                                        jobStateDiagnosticsPair.getValue())))
+                .delay(jobStateDiagnosticsPair ->
+                        runningJob
+                                .awaitPostDone()
+                                .subscribeOn(schedulers.processBarVisibleAsync(
+                                        "Waiting for " + getTitle() + " log aggregation is done"))
+                );
     }
 
     @NotNull

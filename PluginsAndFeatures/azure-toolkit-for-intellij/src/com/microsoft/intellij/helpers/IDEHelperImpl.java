@@ -24,6 +24,8 @@ package com.microsoft.intellij.helpers;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -350,8 +352,12 @@ public class IDEHelperImpl implements IDEHelper {
         try {
             Desktop.getDesktop().browse(URI.create(url));
         } catch (Throwable e) {
-            DefaultLoader.getUIHelper().logError("Unexpected exception: " + e.getMessage(), e);
-            throw new RuntimeException("Browse web app exception", e);
+            try {
+                BrowserUtil.browse(url);
+            } catch (Throwable e) {
+                DefaultLoader.getUIHelper().logError("Unexpected exception: " + e.getMessage(), e);
+                throw new RuntimeException("Browse web app exception", e);
+            }
         }
     }
 }

@@ -18,29 +18,19 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
+package com.microsoft.azure.hdinsight.spark.run.configuration
 
-package com.microsoft.azure.hdinsight.sdk.common.livy.interactive;
+import com.intellij.openapi.project.Project
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchJobConfigurableModel
+import com.microsoft.azure.hdinsight.spark.common.SparkLocalRunConfigurableModel
 
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-import com.microsoft.azure.hdinsight.sdk.common.ServerlessSparkHttpObservable;
-import com.microsoft.azure.hdinsight.sdk.common.HttpObservable;
-import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+class ArcadiaSparkConfigurableModel(project: Project) : SparkBatchJobConfigurableModel(project) {
+    private val arcadiaSparkSubmitModel = ArcadiaSparkSubmitModel(project)
 
-import java.net.URI;
-
-public class ServerlessSparkSession extends SparkSession {
-    @NotNull
-    private ServerlessSparkHttpObservable http;
-
-    public ServerlessSparkSession(@NotNull String name, @NotNull URI baseUrl, @NotNull String tenantId, @NotNull AzureSparkServerlessAccount adlAccount) {
-        super(name, baseUrl);
-        this.http = new ServerlessSparkHttpObservable(tenantId, adlAccount);
+    init {
+        localRunConfigurableModel = SparkLocalRunConfigurableModel(project)
+        submitModel = arcadiaSparkSubmitModel
     }
-
-    @Override
-    @NotNull
-    public HttpObservable getHttp() {
-        return this.http;
-    }    
 }

@@ -56,8 +56,7 @@ public class AzureSparkCosmosCluster extends SparkCluster
                                                     ServerlessCluster,
                                                     DestroyableCluster,
                                                     LivyCluster,
-                                                    YarnCluster,
-                                                    Comparable<AzureSparkCosmosCluster> {
+                                                    YarnCluster {
     public static class SparkResource {
         int instances;
         int coresPerInstance;
@@ -397,7 +396,9 @@ public class AzureSparkCosmosCluster extends SparkCluster
         }
     }
 
-    public String getClusterNameWithAccountName() {
+    @Override
+    @NotNull
+    public String getClusterIdForConfiguration() {
         return String.format("%s@%s", getName(), account.getName());
     }
 
@@ -407,7 +408,7 @@ public class AzureSparkCosmosCluster extends SparkCluster
     @NotNull
     @Override
     public String getTitle() {
-        return String.format("%s [%s]", getClusterNameWithAccountName(), getClusterStateForShow());
+        return String.format("%s [%s]", getClusterIdForConfiguration(), getClusterStateForShow());
     }
 
     /**
@@ -789,11 +790,6 @@ public class AzureSparkCosmosCluster extends SparkCluster
 
     @NotNull
     private final AzureSparkServerlessAccount account;
-
-    @Override
-    public int compareTo(@NotNull AzureSparkCosmosCluster other) {
-        return this.getTitle().compareTo(other.getTitle());
-    }
 
     @Nullable
     public String getTenantId() {

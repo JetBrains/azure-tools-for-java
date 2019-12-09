@@ -32,8 +32,10 @@ import com.intellij.uiDesigner.core.GridConstraints.*
 import com.microsoft.azure.hdinsight.common.ClusterManagerEx
 import com.microsoft.azure.hdinsight.common.logger.ILogger
 import com.microsoft.azure.hdinsight.common.mvc.SettableControl
+import com.microsoft.azure.hdinsight.sdk.cluster.ClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.HDInsightAdditionalClusterDetail
 import com.microsoft.azure.hdinsight.sdk.cluster.IClusterDetail
+import com.microsoft.azure.hdinsight.sdk.cluster.MfaClusterDetail
 import com.microsoft.azure.hdinsight.sdk.common.AzureSparkClusterManager
 import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount
 import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
@@ -43,8 +45,10 @@ import com.microsoft.azure.hdinsight.sdk.storage.StoragePathInfo
 import com.microsoft.azure.hdinsight.spark.common.SparkBatchJob
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
+import com.microsoft.azure.hdinsight.spark.common.getSecureStoreServiceOf
 import com.microsoft.azure.hdinsight.spark.ui.SparkSubmissionJobUploadStorageCtrl.StorageCheckEvent
 import com.microsoft.azure.sqlbigdata.sdk.cluster.SqlBigDataLivyLinkClusterDetail
+import com.microsoft.azuretools.ijidea.ui.AccessibleHideableTitledPanel
 import com.microsoft.azuretools.securestore.SecureStore
 import com.microsoft.azuretools.service.ServiceManager
 import com.microsoft.intellij.forms.dsl.panel
@@ -58,7 +62,10 @@ import rx.schedulers.Schedulers
 import rx.subjects.ReplaySubject
 import java.awt.CardLayout
 import java.util.concurrent.TimeUnit
-import javax.swing.*
+import javax.swing.DefaultComboBoxModel
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JTextField
 
 class SparkSubmissionJobUploadStorageWithUploadPathPanel
     : JPanel(), Disposable, SettableControl<SparkSubmitJobUploadStorageModel>, ILogger {
@@ -76,14 +83,13 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
     private val uploadPathLabel = JLabel("Upload Path")
     private val uploadPathField = JTextField().apply {
         isEditable = false
-        border = BorderFactory.createEmptyBorder()
     }
 
     val storagePanel = SparkSubmissionJobUploadStoragePanel().apply {
         Disposer.register(this@SparkSubmissionJobUploadStorageWithUploadPathPanel, this@apply)
     }
 
-    private val hideableJobUploadStoragePanel = HideableTitledPanel(jobUploadStorageTitle, true, storagePanel, false)
+    private val hideableJobUploadStoragePanel = AccessibleHideableTitledPanel(jobUploadStorageTitle, storagePanel)
 
     init {
         val formBuilder = panel {
@@ -97,7 +103,9 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                     fill = FILL_HORIZONTAL
                 }
                 row {
-                    c(uploadPathLabel) { indent = 0 }; c(uploadPathField) {}
+                    c(uploadPathLabel
+                            .apply { labelFor = uploadPathField }) { indent = 0 }
+                                                                                        c(uploadPathField) {}
                 }
                 row {
                     c(hideableJobUploadStoragePanel) { colSpan = 2; hSizePolicy = SIZEPOLICY_WANT_GROW; fill = FILL_HORIZONTAL }
@@ -222,7 +230,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                         errorMsg = "Cluster have no storage account"
                                         uploadPath = invalidUploadPath
                                     } else {
-                                        val path = control.getUploadPath(defaultStorageAccount)
+                                        // TODO: need to test whether this has block issue
+                                        val path = (cluster as? ClusterDetail)?.defaultStorageRootPath ?.trimEnd('/') ?: "" +
+                                                "/${SparkSubmissionContentPanel.Constants.submissionFolder}/"
+
                                         if (path == null) {
                                             errorMsg = "Error getting upload path from storage account"
                                             uploadPath = invalidUploadPath
@@ -238,7 +249,10 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                                 }
                             }
                             SparkSubmitStorageType.BLOB -> model.apply {
-                                if (containersModel.size == 0 || containersModel.selectedItem == null) {
+                                if (containersModel.size == 0
+                                        || containersModel.selectedItem == null
+                                        || storageAccount.isNullOrBlank()
+                                        || storageKey.isNullOrBlank()) {
                                     uploadPath = invalidUploadPath
                                     errorMsg = "Azure Blob storage form is not completed"
                                 } else {
@@ -379,18 +393,29 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
             uploadPathField.text = data.uploadPath
             when (data.storageAccountType) {
                 SparkSubmitStorageType.BLOB -> {
-                    storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
-                    val credentialAccount = data.getCredentialAccount(data.storageAccount, SparkSubmitStorageType.BLOB)
-                    storagePanel.azureBlobCard.storageKeyField.text =
+                    if (storagePanel.azureBlobCard.storageAccountField.text != data.storageAccount) {
+                        storagePanel.azureBlobCard.storageAccountField.text = data.storageAccount
+                    }
+
+                    val credentialAccount = SparkSubmitStorageType.BLOB.getSecureStoreServiceOf(data.storageAccount)
+                    val storageKeyToSet =
                             if (StringUtils.isEmpty(data.errorMsg) && StringUtils.isEmpty(data.storageKey)) {
                                 credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.storageAccount) }
                             } else {
                                 data.storageKey
                             }
-                    if (data.containersModel.size == 0 && StringUtils.isEmpty(storagePanel.errorMessage) && StringUtils.isNotEmpty(data.selectedContainer)) {
-                        storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
-                    } else {
-                        storagePanel.azureBlobCard.storageContainerUI.comboBox.model = data.containersModel as DefaultComboBoxModel<Any>
+                    if (storagePanel.azureBlobCard.storageKeyField.text != storageKeyToSet) {
+                        storagePanel.azureBlobCard.storageKeyField.text = storageKeyToSet
+                    }
+
+                    if (storagePanel.azureBlobCard.storageContainerUI.comboBox.model != data.containersModel) {
+                        if (data.containersModel.size == 0
+                                && StringUtils.isEmpty(storagePanel.errorMessage)
+                                && StringUtils.isNotEmpty(data.selectedContainer)) {
+                            storagePanel.azureBlobCard.storageContainerUI.comboBox.model = DefaultComboBoxModel(arrayOf(data.selectedContainer))
+                        } else {
+                            storagePanel.azureBlobCard.storageContainerUI.comboBox.model = data.containersModel as DefaultComboBoxModel<Any>
+                        }
                     }
                 }
                 SparkSubmitStorageType.ADLS_GEN1 -> {
@@ -429,9 +454,8 @@ class SparkSubmissionJobUploadStorageWithUploadPathPanel
                         storagePanel.adlsGen2Card.gen2RootPathField.text = data.gen2RootPath
                     }
 
-                    val credentialAccount = data.getCredentialAccount(
-                            getAccount(SparkBatchJob.AdlsGen2RestfulPathPattern, data.gen2RootPath),
-                            SparkSubmitStorageType.ADLS_GEN2)
+                    val credentialAccount = SparkSubmitStorageType.ADLS_GEN2.getSecureStoreServiceOf(
+                            getAccount(SparkBatchJob.AdlsGen2RestfulPathPattern, data.gen2RootPath))
                     storagePanel.adlsGen2Card.storageKeyField.text =
                             if (StringUtils.isEmpty(data.accessKey)) {
                                 credentialAccount?.let { secureStore?.loadPassword(credentialAccount, data.gen2Account) ?: "" }

@@ -39,7 +39,6 @@ import com.microsoft.azure.hdinsight.sdk.storage.HDStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.IHDIStorageAccount
 import com.microsoft.azure.hdinsight.sdk.storage.adlsgen2.ADLSGen2FSOperation
 import com.microsoft.azure.hdinsight.spark.common.SparkSubmitJobUploadStorageModel
-import com.microsoft.azure.hdinsight.spark.common.SparkSubmitStorageType
 import com.microsoft.azure.storage.blob.BlobRequestOptions
 import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.tooling.msservices.helpers.azure.sdk.StorageClientSDKManager
@@ -54,6 +53,7 @@ import java.awt.event.FocusEvent
 import java.awt.event.ItemEvent
 import java.net.URI
 import java.util.stream.Collectors
+import javax.swing.ComboBoxModel
 import javax.swing.DefaultComboBoxModel
 import javax.swing.event.DocumentEvent
 
@@ -104,7 +104,16 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                         { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
             }
         }
-        // after container is selected, update upload path
+
+        // after container is selected or new model is set, update upload path
+        view.storagePanel.azureBlobCard.storageContainerUI.comboBox.addPropertyChangeListener("model") {
+            if ((it.oldValue as? ComboBoxModel<*>)?.selectedItem != (it.newValue as? ComboBoxModel<*>)?.selectedItem) {
+                updateStorageAfterContainerSelected().subscribe(
+                        { },
+                        { err -> log().warn(ExceptionUtils.getStackTrace(err)) })
+            }
+        }
+
         view.storagePanel.azureBlobCard.storageContainerUI.comboBox.addItemListener { itemEvent ->
             if (itemEvent?.stateChange == ItemEvent.SELECTED) {
                 updateStorageAfterContainerSelected().subscribe(
@@ -125,41 +134,11 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
             }
         }
 
-        //save access key after access key text change
-        view.storagePanel.adlsGen2Card.storageKeyField.addFocusListener(object : FocusAdapter() {
-            override fun focusLost(e: FocusEvent?) {
-                saveAccesKey().subscribe(
-                        { model ->
-                            if (!StringUtils.isEmpty(model.gen2Account)){
-                                log().info("save new access key for account ${model.gen2Account}")
-                            }
-                        },
-                        {}
-                )
-            }
-        })
-
         view.storagePanel.adlsGen2Card.gen2RootPathField.addFocusListener(object : FocusAdapter() {
             override fun focusLost(e: FocusEvent?) {
                 view.viewModel.uploadStorage.storageCheckSubject.onNext(StorageCheckPathFocusLostEvent("ADLS GEN2"))
             }
         })
-    }
-
-    private fun saveAccesKey(): Observable<SparkSubmitJobUploadStorageModel> {
-        return Observable.just(SparkSubmitJobUploadStorageModel())
-                .doOnNext(view::getData)
-                .map { model ->
-                    model.apply {
-                        if (!StringUtils.isEmpty(accessKey) && !StringUtils.isEmpty(gen2Account)) {
-                            val credentialAccount = getCredentialAccount(gen2Account, SparkSubmitStorageType.ADLS_GEN2)
-                            credentialAccount?.let {
-                                view.secureStore?.savePassword(credentialAccount, gen2Account, accessKey)
-                            }
-                        }
-                    }
-                }
-                .doOnNext(view::setData)
     }
 
     private fun refreshSubscriptions(): Observable<SparkSubmitJobUploadStorageModel> {
@@ -220,9 +199,6 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                             try {
                                 val clientStorageAccount = ClientStorageAccount(toUpdate.storageAccount)
                                         .apply { primaryKey = toUpdate.storageKey }
-                                val credentialAccount = getCredentialAccount(toUpdate.storageAccount,  SparkSubmitStorageType.BLOB)
-                                credentialAccount?.let {
-                                    view.secureStore?.savePassword(credentialAccount, storageAccount, storageKey) }
 
                                 // Add Timeout for list containers operation to avoid getting stuck
                                 // when storage account or key is invalid
@@ -298,8 +274,8 @@ class SparkSubmissionJobUploadStorageCtrl(val view: SparkSubmissionJobUploadStor
                 is HDStorageAccount -> getAzureBlobStoragePath(account.fullStorageBlobName, account.defaultContainer, account.scheme)
                 is ADLSStorageAccount ->
                     if (StringUtils.isBlank(account.name) || StringUtils.isBlank(account.defaultContainerOrRootPath)) null
-                    else "adl://${account.name}.azuredatalakestore.net${account.defaultContainerOrRootPath}SparkSubmission/"
-                is AzureSparkCosmosCluster.StorageAccount -> account.defaultContainerOrRootPath?.let { "${it}SparkSubmission/" }
+                    else "adl://${account.name}.azuredatalakestore.net${account.defaultContainerOrRootPath + SparkSubmissionContentPanel.Constants.submissionFolder}/"
+                is AzureSparkCosmosCluster.StorageAccount -> account.defaultContainerOrRootPath?.let { "${it + SparkSubmissionContentPanel.Constants.submissionFolder}/" }
                 else -> null
             }
 }

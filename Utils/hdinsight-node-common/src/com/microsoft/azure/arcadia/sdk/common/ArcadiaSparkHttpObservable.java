@@ -20,41 +20,53 @@
  * SOFTWARE.
  */
 
-package com.microsoft.azure.hdinsight.sdk.common;
+package com.microsoft.azure.arcadia.sdk.common;
 
-import com.microsoft.azure.hdinsight.sdk.common.azure.serverless.AzureSparkServerlessAccount;
-
-import com.microsoft.azuretools.authmanage.CommonSettings;
+import com.microsoft.azure.hdinsight.sdk.common.ApiVersionParam;
+import com.microsoft.azure.hdinsight.sdk.common.AzureHttpObservable;
+import com.microsoft.azure.hdinsight.spark.common.SparkBatchArcadiaSubmission;
 import com.microsoft.azuretools.azurecommons.helpers.NotNull;
+import org.apache.http.Header;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicHeader;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.http.Header;
-import org.apache.http.message.BasicHeader;
+public class ArcadiaSparkHttpObservable extends AzureHttpObservable {
+    @NotNull
+    private String workspaceName;
 
-public class ServerlessSparkHttpObservable extends AzureHttpObservable {
-    public static final String KOBO_ACCOUNT_HEADER_NAME = "x-ms-kobo-account-name";
-
-    private AzureSparkServerlessAccount adlAccount;
-
-    public ServerlessSparkHttpObservable(@NotNull String tenantId, @NotNull AzureSparkServerlessAccount adlAccount) {
+    public ArcadiaSparkHttpObservable(@NotNull String tenantId, @NotNull String workspaceName) {
         super(tenantId, "");
-        this.adlAccount = adlAccount;
+        this.workspaceName = workspaceName;
     }
 
     @Override
     public Header[] getDefaultHeaders() throws IOException {
         Header[] defaultHeaders = super.getDefaultHeaders();
         List<Header> headers = Arrays.stream(defaultHeaders)
-                      .filter(header -> !header.getName().equals(KOBO_ACCOUNT_HEADER_NAME))
-                      .collect(Collectors.toList());
+                .filter(header -> !header.getName().equals(SparkBatchArcadiaSubmission.WORKSPACE_HEADER_NAME))
+                .collect(Collectors.toList());
 
-        headers.add(new BasicHeader(KOBO_ACCOUNT_HEADER_NAME, adlAccount.getName()));
+        headers.add(new BasicHeader(SparkBatchArcadiaSubmission.WORKSPACE_HEADER_NAME, workspaceName));
 
         return headers.toArray(new Header[0]);
+    }
+
+    @Override
+    public List<NameValuePair> getDefaultParameters() {
+        return super.getDefaultParameters()
+                .stream()
+                // parameter apiVersion is not needed for arcadia since it's already specified in the path of query url
+                .filter(kvPair -> !kvPair.getName().equals(ApiVersionParam.NAME))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getResourceEndpoint() {
+        return SparkBatchArcadiaSubmission.ARCADIA_RESOURCE_ID;
     }
 }
