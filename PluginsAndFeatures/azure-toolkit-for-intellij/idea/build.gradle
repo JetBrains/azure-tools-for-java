@@ -20,17 +20,6 @@ dependencies {
 apply plugin: 'checkstyle'
 apply plugin: 'findbugs'
 
-checkstyle {
-    toolVersion = '7.7'
-    configFile = new File('config/checkstyle/checkstyle.xml')
-    showViolations = false
-}
-
-findbugs {
-    toolVersion = "3.0.1"
-    ignoreFailures = true
-}
-
 intellij {
     pluginName = 'azure-toolkit-for-intellij'
     version = idea_version
@@ -44,6 +33,17 @@ test {
     testLogging {
         events "passed", "skipped", "failed"
     }
+}
+
+checkstyle {
+    toolVersion = '7.7'
+    configFile = new File('config/checkstyle/checkstyle.xml')
+    showViolations = false
+}
+
+findbugs {
+    toolVersion = "3.0.1"
+    ignoreFailures = true
 }
 
 task cucumberPackJar(type: Jar) {
