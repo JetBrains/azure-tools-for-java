@@ -17,24 +17,6 @@ dependencies {
     testCompile "org.jetbrains.kotlin:kotlin-test-junit"
 }
 
-configurations.all {
-    resolutionStrategy.force 'com.google.code.findbugs:jsr305:2.0.1'
-}
-
-apply plugin: 'checkstyle'
-apply plugin: 'findbugs'
-
-checkstyle {
-    toolVersion = '8.24'
-    configFile = new File('config/checkstyle/checkstyle.xml')
-    showViolations = false
-}
-
-findbugs {
-    toolVersion = "3.0.1"
-    ignoreFailures = true
-}
-
 intellij {
     pluginName = 'azure-toolkit-for-intellij'
     version = idea_version
