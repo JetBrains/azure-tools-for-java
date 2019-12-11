@@ -1,8 +1,6 @@
 dependencies {
     compile rootProject
 
-    compile 'com.google.code.findbugs:jsr305:2.0.1'
-
     testCompile 'junit:junit:4.12'
     testCompile 'info.cukes:cucumber-junit:1.2.5'
     testCompile 'info.cukes:cucumber-java:1.2.5'
@@ -22,12 +20,8 @@ dependencies {
 apply plugin: 'checkstyle'
 apply plugin: 'findbugs'
 
-configurations.all {
-    resolutionStrategy.force 'com.google.code.findbugs:jsr305:2.0.1'
-}
-
 checkstyle {
-    toolVersion = '8.24'
+    toolVersion = '7.7'
     configFile = new File('config/checkstyle/checkstyle.xml')
     showViolations = false
 }
