@@ -18,22 +18,6 @@ processResources {
     }
 }
 
-group 'com.microsoft.azuretools'
-
-compileJava {
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-}
-
-compileKotlin {
-    kotlinOptions.jvmTarget = javaVersion
-}
-compileTestKotlin {
-    kotlinOptions.jvmTarget = javaVersion
-}
-
-tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
-
 repositories {
     maven {url uri('../../.repository')} // to snap to the private maven repo on Jenkins if any
     mavenLocal()
@@ -131,6 +115,8 @@ allprojects {
     runIde {
         jvmArgs '-Xmx2048m'
     }
+
+    buildSearchableOptions.enabled = false
 
     instrumentCode {
         // javac2 is required to compile .form files from IntelliJ IDEA UI Designer
