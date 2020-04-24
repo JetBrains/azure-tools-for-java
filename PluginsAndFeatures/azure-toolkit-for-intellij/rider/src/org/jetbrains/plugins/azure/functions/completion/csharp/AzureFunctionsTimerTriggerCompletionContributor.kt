@@ -26,15 +26,18 @@ import com.cronutils.descriptor.CronDescriptor
 import com.cronutils.parser.CronParser
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.util.ProcessingContext
 import com.jetbrains.rider.ideaInterop.fileTypes.csharp.CSharpLanguage
 import com.jetbrains.rider.ideaInterop.fileTypes.csharp.lexer.CSharpTokenType
-import org.jetbrains.plugins.azure.functions.helpers.csharp.AzureFunctionsPsiHelper
 import org.jetbrains.plugins.azure.functions.helpers.NCrontabCronDefinition
+import org.jetbrains.plugins.azure.functions.helpers.csharp.AzureFunctionsPsiHelper
 import java.util.*
 
 class AzureFunctionsTimerTriggerCompletionContributor : CompletionContributor() {
+
+    private val logger = Logger.getInstance(AzureFunctionsTimerTriggerCompletionContributor::class.java)
 
     private val cronParser = CronParser(NCrontabCronDefinition)
     private val cronDescriptor = CronDescriptor.instance(Locale.getDefault())
@@ -76,11 +79,15 @@ class AzureFunctionsTimerTriggerCompletionContributor : CompletionContributor() 
                         if (timerTriggerAttributeElement != null) {
                             for (cronSuggestion in cronSuggestions) {
 
-                                val cron = cronParser.parse(cronSuggestion)
-                                val description = cronDescriptor.describe(cron)
+                                try {
+                                    val cron = cronParser.parse(cronSuggestion)
+                                    val description = cronDescriptor.describe(cron)
 
-                                resultSet.addElement(LookupElementBuilder.create(cronSuggestion)
-                                        .withTypeText(description))
+                                    resultSet.addElement(LookupElementBuilder.create(cronSuggestion)
+                                            .withTypeText(description))
+                                } catch (e: IllegalArgumentException) {
+                                    logger.error("Error while adding completion suggestion '$cronSuggestion'", e)
+                                }
                             }
                         }
                     }
