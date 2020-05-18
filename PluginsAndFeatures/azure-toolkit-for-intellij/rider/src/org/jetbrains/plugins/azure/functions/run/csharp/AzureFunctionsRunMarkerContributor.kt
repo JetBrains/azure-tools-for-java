@@ -30,7 +30,7 @@ import com.microsoft.icons.CommonIcons
 import org.jetbrains.plugins.azure.functions.actions.TriggerAzureFunctionAction
 import org.jetbrains.plugins.azure.functions.helpers.csharp.AzureFunctionsPsiHelper
 
-class AzureFunctionsRunMarkerContributor: RunLineMarkerContributor() {
+class AzureFunctionsRunMarkerContributor : RunLineMarkerContributor() {
 
     override fun getInfo(element: PsiElement): Info? {
         val functionName = AzureFunctionsPsiHelper.tryResolveAzureFunctionName(element) ?: return null
@@ -39,6 +39,7 @@ class AzureFunctionsRunMarkerContributor: RunLineMarkerContributor() {
                 Separator(),
                 TriggerAzureFunctionAction(functionName)
         )
+
         return Info(CommonIcons.AzureFunctions.FunctionAppRunConfiguration, actions) { "Run Azure Function" }
     }
 }

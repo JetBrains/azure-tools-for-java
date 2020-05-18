@@ -1,11 +1,29 @@
+import org.jetbrains.intellij.Utils
+
+sourceSets {
+    integrationTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+
+        kotlin.srcDirs = ['test-integration']
+        resources.srcDirs = ['test-integration/resources']
+    }
+}
+
 dependencies {
     compile rootProject
     compile "org.java-websocket:Java-WebSocket:$web_socket_version"
     compile "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
     implementation "com.cronutils:cron-utils:$cron_utils_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
 
-    testCompile rootProject
+configurations {
+    testArtifacts
+
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 if (!ext.has("BuildNumber"))
@@ -21,7 +39,11 @@ intellij {
     pluginName = 'azure-toolkit-for-rider'
     version = rider_version
 
-    plugins 'terminal', 'restClient', dep_plugins_rider
+    // Workaround for https://youtrack.jetbrains.com/issue/IDEA-179607
+    def extraPlugins = [ "rider-plugins-appender" ]
+    plugins = ['terminal', 'restClient', 'yaml', dep_plugins_rider] + extraPlugins
+
+    downloadSources = Boolean.valueOf(sources)
 }
 
 tasks.withType(prepareSandbox.class) {
@@ -36,4 +58,19 @@ patchPluginXml {
 
 test {
     useTestNG()
+}
+
+task integrationTest(type: Test) {
+    description = "Rider Azure integration tests based on Rider Test Framework."
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+
+    useTestNG()
+
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    doFirst {
+        println "JDK = ${org.gradle.internal.jvm.Jvm.current()}"
+        println "RD = ${intellij.version}"
+    }
 }
