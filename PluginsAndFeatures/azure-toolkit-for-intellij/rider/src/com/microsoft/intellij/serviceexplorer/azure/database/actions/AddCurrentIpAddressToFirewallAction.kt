@@ -43,7 +43,6 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver
 import org.jetbrains.plugins.azure.RiderAzureBundle.message
 import org.jetbrains.plugins.azure.cloudshell.AzureCloudShellNotifications
 import org.jetbrains.plugins.azure.util.PublicIpAddressProvider
-import sun.net.util.IPAddressUtil
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -93,7 +92,7 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
                 message("dialog.cloud_shell.app_firewall_rule.title"),
                 firewallIcon,
                 publicIpAddressResult.ipv4address,
-                IpAddressInputValidator.INSTANCE)
+                IpAddressInputValidator.instance)
 
         if (ipAddressInput.isNullOrEmpty()) return
 
@@ -126,17 +125,32 @@ abstract class AddCurrentIpAddressToFirewallAction(private val node: Node) : Nod
         })
     }
 
-    private class IpAddressInputValidator : InputValidator {
+    class IpAddressInputValidator : InputValidator {
         companion object {
-            val INSTANCE = IpAddressInputValidator()
+            val instance = IpAddressInputValidator()
         }
 
         override fun checkInput(input: String?): Boolean {
-            return !input.isNullOrEmpty() && IPAddressUtil.isIPv4LiteralAddress(input)
+            return !input.isNullOrEmpty() && validateIpV4Address(input)
         }
 
         override fun canClose(input: String?): Boolean {
             return checkInput(input)
+        }
+
+        fun validateIpV4Address(address: String): Boolean {
+            val regex = Regex("^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$")
+            val match = regex.matchEntire(address) ?: return false
+
+            return match.groupValues.drop(1).all { value ->
+                val intValue = value.toIntOrNull()
+                        ?: return@all false
+
+                if (value.length > 1 && value.startsWith('0'))
+                    return@all false
+
+                intValue in 0..255
+            }
         }
     }
 }

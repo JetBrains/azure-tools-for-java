@@ -20,33 +20,31 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.helpers.defaults
+package com.microsoft.intellij.serviceexplorer.azure.database.actions
 
 import com.jetbrains.rider.test.asserts.shouldBe
-import com.microsoft.azure.management.appservice.PricingTier
-import com.microsoft.azure.management.resources.fluentcore.arm.Region
-import com.microsoft.azure.management.sql.DatabaseEdition
+import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 
-class AzureDefaultsTest {
+class IpAddressInputValidatorTest {
 
-    @Test
-    fun testSqlDatabaseCollation_DefaultValue() {
-        AzureDefaults.SQL_DATABASE_COLLATION.shouldBe("SQL_Latin1_General_CP1_CI_AS")
-    }
+    @DataProvider(name = "validateIpV4AddressData")
+    fun validateIpV4AddressData() = arrayOf(
+            arrayOf("Zeros", "0.0.0.0", true),
+            arrayOf("Localhost", "127.0.0.1", true),
+            arrayOf("Max", "255.255.255.255", true),
+            arrayOf("OneInvalid", "198.0.256.1", false),
+            arrayOf("Empty", "...", false),
+            arrayOf("Chars", "0.0.a.0", false),
+            arrayOf("Negative", "0.0.-1.0", false),
+            arrayOf("Symbol", "0.0.-.0", false),
+            arrayOf("Trim", "127.0.1", false)
+    )
 
-    @Test
-    fun testSqlDatabaseEdition_DefaultValue() {
-        AzureDefaults.databaseEdition.shouldBe(DatabaseEdition.BASIC)
-    }
-
-    @Test
-    fun testLocation_DefaultValue() {
-        AzureDefaults.location.shouldBe(Region.US_EAST)
-    }
-
-    @Test
-    fun testPricingTier_DefaultValue() {
-        AzureDefaults.pricingTier.shouldBe(PricingTier.STANDARD_S1)
+    @Test(dataProvider = "validateIpV4AddressData")
+    fun testValidateIpV4Address(name: String, address: String, isValid: Boolean) {
+        val validator = AddCurrentIpAddressToFirewallAction.IpAddressInputValidator.instance
+        val isValidAddress = validator.validateIpV4Address(address)
+        isValidAddress.shouldBe(isValid)
     }
 }

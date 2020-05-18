@@ -4,8 +4,6 @@ dependencies {
     compile "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
     implementation "com.cronutils:cron-utils:$cron_utils_version"
-
-    testCompile rootProject
 }
 
 if (!ext.has("BuildNumber"))
@@ -20,8 +18,9 @@ def extensionsFrom = 'resources/dotnet'
 intellij {
     pluginName = 'azure-toolkit-for-rider'
     version = rider_version
+    plugins = ['terminal', 'restClient', 'yaml', dep_plugins_rider]
 
-    plugins 'terminal', 'restClient', dep_plugins_rider
+    downloadSources = Boolean.valueOf(sources)
 }
 
 tasks.withType(prepareSandbox.class) {
