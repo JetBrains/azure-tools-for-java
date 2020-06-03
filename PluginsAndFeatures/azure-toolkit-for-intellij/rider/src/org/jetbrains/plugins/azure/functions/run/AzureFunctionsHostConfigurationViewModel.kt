@@ -154,7 +154,7 @@ class AzureFunctionsHostConfigurationViewModel(
 
         val parametersPortMatch = portRegex.find(programParameters)
         val parametersPortValue = parametersPortMatch?.groupValues?.getOrNull(2)?.toIntOrNull() ?: -1
-        composeUrlString(port = parametersPortValue, functionName = functionNamesEditor.text.value)
+        composeUrlString(port = parametersPortValue, functionNamesString = functionNamesEditor.text.value)
     }
 
     private fun handleProjectSelection(runnableProject: RunnableProject) {
@@ -188,11 +188,11 @@ class AzureFunctionsHostConfigurationViewModel(
     }
 
     private fun handleFunctionNameChange(functionName: String) {
-        composeUrlString(port = null, functionName = functionName)
+        composeUrlString(port = null, functionNamesString = functionName)
     }
 
-    private fun composeUrlString(port: Int? = null, functionName: String? = null) {
-        if (port == null && functionName == null)
+    private fun composeUrlString(port: Int? = null, functionNamesString: String? = null) {
+        if (port == null && functionNamesString == null)
             throw IllegalStateException("Missing all parameters (port, functionName). Please provide at least one.")
 
         val currentUrl = urlEditor.text.value
@@ -202,8 +202,15 @@ class AzureFunctionsHostConfigurationViewModel(
         if (port != null)
             url.port = port
 
-        if (functionName != null)
-            url.path = if (functionName.isEmpty()) "" else "/api/${functionName.trim()}"
+        if (functionNamesString != null) {
+            val functionNames =
+                    functionNamesString.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+
+            url.path = when (functionNames.size) {
+                1 -> "/api/${functionNames.first()}"
+                else -> ""
+            }
+        }
 
         val updatedUrl = url.build().toString()
 
