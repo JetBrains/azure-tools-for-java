@@ -95,8 +95,6 @@ class AzureFunctionsHostConfigurationViewModel(
         programParametersEditor.parametersString.advise(lifetime) { recalculateTrackProjectOutput() }
         workingDirectorySelector.path.advise(lifetime) { recalculateTrackProjectOutput() }
 
-        functionNamesEditor.text.change.advise(lifetime) { text -> handleFunctionNameChange(text) }
-
         // Please make sure it is executed after you enable controls through [RunConfigurationViewModelBase::enable]
         disableBrowserUrl()
     }
@@ -154,7 +152,17 @@ class AzureFunctionsHostConfigurationViewModel(
 
         val parametersPortMatch = portRegex.find(programParameters)
         val parametersPortValue = parametersPortMatch?.groupValues?.getOrNull(2)?.toIntOrNull() ?: -1
-        composeUrlString(port = parametersPortValue, functionNamesString = functionNamesEditor.text.value)
+        composeUrlString(parametersPortValue)
+    }
+
+    private fun composeUrlString(port: Int) {
+        val currentUrl = urlEditor.text.value
+        val originalUrl = if (currentUrl.isNotEmpty()) currentUrl else "http://localhost"
+
+        val updatedUrl = URIBuilder(originalUrl).setPort(port).build().toString()
+
+        urlEditor.text.set(updatedUrl)
+        urlEditor.defaultValue.set(updatedUrl)
     }
 
     private fun handleProjectSelection(runnableProject: RunnableProject) {
@@ -185,37 +193,6 @@ class AzureFunctionsHostConfigurationViewModel(
             tfmSelector.string.set(tfmSelector.stringList.first())
         }
         handleChangeTfmSelection()
-    }
-
-    private fun handleFunctionNameChange(functionName: String) {
-        composeUrlString(port = null, functionNamesString = functionName)
-    }
-
-    private fun composeUrlString(port: Int? = null, functionNamesString: String? = null) {
-        if (port == null && functionNamesString == null)
-            throw IllegalStateException("Missing all parameters (port, functionName). Please provide at least one.")
-
-        val currentUrl = urlEditor.text.value
-        val originalUrl = if (currentUrl.isNotEmpty()) currentUrl else "http://localhost"
-        val url = URIBuilder(originalUrl)
-
-        if (port != null)
-            url.port = port
-
-        if (functionNamesString != null) {
-            val functionNames =
-                    functionNamesString.split(',').map { it.trim() }.filter { it.isNotEmpty() }
-
-            url.path = when (functionNames.size) {
-                1 -> "/api/${functionNames.first()}"
-                else -> ""
-            }
-        }
-
-        val updatedUrl = url.build().toString()
-
-        urlEditor.text.set(updatedUrl)
-        urlEditor.defaultValue.set(updatedUrl)
     }
 
     fun reset(projectFilePath: String,
