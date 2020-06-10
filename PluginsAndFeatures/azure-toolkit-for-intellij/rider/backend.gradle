@@ -71,6 +71,7 @@ task cleanGeneratedErrors {
 task cleanBackendProjects {
     group = backendGroup
     description = 'Clean backend projects'
+    dependsOn prepareBuildProps, prepareNuGetConfig, cleanGeneratedErrors
 
     doLast {
         exec {
@@ -89,7 +90,7 @@ task cleanBin {
 
     doLast {
         def dirsToDelete = new ArrayList<File>()
-        file(srcDir).eachFileRecurse(FileType.DIRECTORIES) { dirToCheck ->
+        new File(srcDir).eachFileRecurse(FileType.DIRECTORIES) { dirToCheck ->
             if (cleanupDirNames.any { dirToCheck.name == it }) { dirsToDelete << dirToCheck }
         }
         dirsToDelete.forEach { toDelete -> toDelete.deleteDir() }
@@ -103,7 +104,7 @@ task cleanBin {
 task cleanBackend {
     group = backendGroup
     description = 'Clean all data from backend project'
-    dependsOn cleanBackendProjects, cleanGeneratedErrors, cleanBin
+    dependsOn cleanBackendProjects, cleanBin
 }
 
 task buildReSharperPlugin {
@@ -182,7 +183,7 @@ private static void cleanFilesByMask(String baseDir, String[] masks) {
     masks.each { fileMask ->
         def matches = finder.getFileNames(baseDir, fileMask)
         matches.forEach { match ->
-            def toDelete = file(match)
+            def toDelete = new File(match)
             if (toDelete.isFile())
                 toDelete.delete()
         }

@@ -186,6 +186,9 @@
                      implementationClass="org.jetbrains.plugins.azure.functions.codeInspection.msbuild.AzureFunctionsVersionInspection"/>
 
     <internalFileTemplate name="Trigger Azure Function"/>
+
+    <completion.contributor language="C#"
+                            implementationClass="org.jetbrains.plugins.azure.functions.completion.csharp.TimerTriggerCompletionContributor" />
   </extensions>
 
   <extensions defaultExtensionNs="com.microsoft.intellij">

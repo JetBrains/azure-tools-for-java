@@ -24,8 +24,8 @@ using JetBrains.ReSharper.Azure.Psi.FunctionApp;
 using JetBrains.ReSharper.Feature.Services.CodeCompletion;
 using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure;
 using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure.LookupItems;
-using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure.LookupItems.Impl;
 using JetBrains.ReSharper.Feature.Services.CSharp.CodeCompletion.Infrastructure;
+using JetBrains.ReSharper.Features.Intellisense.CodeCompletion.CSharp;
 using JetBrains.ReSharper.Features.Intellisense.CodeCompletion.CSharp.Rules;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.CSharp;
@@ -85,16 +85,22 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.CodeCompletion.CSha
         {
             foreach (var cronSuggestion in CronSuggestions)
             {
-                var lookupItem = new TextLookupItem(cronSuggestion.Expression)
-                {
-                    DisplayTypeName = {Text = cronSuggestion.Description}
-                };
-
                 var literalExpression = context.NodeInFile.Parent as ICSharpLiteralExpression;
                 if (literalExpression == null) return false;
                 var ranges = GetRangeWithinQuotes(literalExpression);
 
-                lookupItem.InitializeRanges(new TextLookupRanges(ranges, ranges), context.BasicContext);
+
+                var lookupItem =
+                    CSharpLookupItemFactory.Instance.CreateTextLookupItem(new TextLookupRanges(ranges, ranges),
+                        cronSuggestion.Expression);
+
+                lookupItem.Presentation.DisplayTypeName.Text = cronSuggestion.Description;
+
+                // Replace spaces prefixes with nbsp to make sure <space> terminates the lookup.
+                // It is required since we need to support case when a user choose to complete by <space>.
+                // TODO: Disable until RIDER-45943 is fixed.
+                // lookupItem.WithMatcher(item =>
+                //     new TextualMatcher<TextualInfo>(item.Info.Text.Replace(" ", "·"), item.Info));
 
                 collector.Add(lookupItem);
             }
