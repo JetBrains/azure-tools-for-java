@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  * <p/>
  * All rights reserved.
  * <p/>
@@ -20,14 +20,11 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.configuration
+package org.jetbrains.plugins.azure.storage.azurite
 
-import com.intellij.openapi.options.ConfigurableProvider
-import com.intellij.openapi.project.Project
+import com.intellij.javascript.nodejs.util.NodePackageDescriptor
 
-class AzureRiderConfigurableProvider(private val project: Project) : ConfigurableProvider() {
-
-    override fun canCreateConfigurable() = true
-
-    override fun createConfigurable() = AzureRiderConfigurable(project)
+object Azurite {
+    val PackageName = "azurite"
+    val PackageDescriptor = NodePackageDescriptor(PackageName)
 }

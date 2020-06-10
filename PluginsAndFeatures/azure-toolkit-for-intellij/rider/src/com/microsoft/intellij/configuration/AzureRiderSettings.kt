@@ -31,4 +31,25 @@ object AzureRiderSettings {
     const val PROPERTY_FUNCTIONS_CORETOOLS_PATH = "AzureFunctionsCoreToolsPath"
     const val PROPERTY_FUNCTIONS_CORETOOLS_ALLOW_PRERELEASE = "AzureFunctionsCoreToolsAllowPrerelease"
     const val PROPERTY_FUNCTIONS_CORETOOLS_CHECK_UPDATES = "AzureFunctionCoreToolsCheckUpdates"
+
+    // Azurite
+    const val PROPERTY_AZURITE_NODE_INTERPRETER = "AzureAzuriteNodeInterpreter"
+    const val PROPERTY_AZURITE_NODE_PACKAGE = "AzureAzuriteNodePackage"
+
+    const val PROPERTY_AZURITE_BLOB_HOST = "AzureAzuriteBlobHost"
+    const val PROPERTY_AZURITE_BLOB_HOST_DEFAULT = "127.0.0.1"
+    const val PROPERTY_AZURITE_BLOB_PORT = "AzureAzuriteBlobPort"
+    const val PROPERTY_AZURITE_BLOB_PORT_DEFAULT = "10000"
+
+    const val PROPERTY_AZURITE_QUEUE_HOST = "AzureAzuriteQueueHost"
+    const val PROPERTY_AZURITE_QUEUE_HOST_DEFAULT = "127.0.0.1"
+    const val PROPERTY_AZURITE_QUEUE_PORT = "AzureAzuriteQueuePort"
+    const val PROPERTY_AZURITE_QUEUE_PORT_DEFAULT = "10001"
+
+    const val PROPERTY_AZURITE_LOCATION = "AzureAzuriteLocation"
+    const val PROPERTY_AZURITE_LOOSE_MODE = "AzureAzuriteLooseMode"
+
+    const val PROPERTY_AZURITE_CERT_PATH = "AzureAzuriteCertPath"
+    const val PROPERTY_AZURITE_CERT_KEY_PATH = "AzureAzuriteCertKeyPath"
+    const val PROPERTY_AZURITE_CERT_PASSWORD = "AzureAzuriteCertPassword"
 }
