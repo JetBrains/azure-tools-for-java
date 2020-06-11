@@ -65,12 +65,11 @@ open class AzuriteServiceViewSessionDescriptor(private val project: Project)
     override fun getToolbarActions() = defaultToolbarActions
 
     override fun getPresentation(): ItemPresentation {
+
         val superPresentation = super.getPresentation()
         if (workspace != null) {
             return object : ItemPresentation {
-                override fun getLocationString(): String? {
-                    return workspace
-                }
+                override fun getLocationString(): String? = workspace
 
                 override fun getIcon(p: Boolean) = superPresentation.getIcon(p)
 
