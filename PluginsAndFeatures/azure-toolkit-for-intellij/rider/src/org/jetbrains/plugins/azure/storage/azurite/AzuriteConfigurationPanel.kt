@@ -88,7 +88,14 @@ class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstra
                                             return@PropertyBinding NodePackageRef.create(Azurite.PackageDescriptor.createPackage(""))
                                         },
                                         { properties.setValue(AzureRiderSettings.PROPERTY_AZURITE_NODE_PACKAGE, it.constantPackage!!.systemDependentPath) })
-                        )
+                        ).withValidationOnInput {
+                            val selected = it.selected
+                            if (selected.version != null && selected.version!!.major < 3) {
+                                ValidationInfo(RiderAzureBundle.message("settings.azurite.validation.invalid.package_version"), it)
+                            } else {
+                                null
+                            }
+                        }
                     }
                 }
 
