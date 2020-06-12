@@ -25,6 +25,9 @@ package org.jetbrains.plugins.azure.storage.azurite
 import com.intellij.javascript.nodejs.util.NodePackageDescriptor
 
 object Azurite {
-    val PackageName = "azurite"
+    const val PackageName = "azurite"
     val PackageDescriptor = NodePackageDescriptor(PackageName)
+
+    const val ManagedPathSuffix = "azurite"
+    const val ProjectPathSuffix = ".idea/azurite"
 }

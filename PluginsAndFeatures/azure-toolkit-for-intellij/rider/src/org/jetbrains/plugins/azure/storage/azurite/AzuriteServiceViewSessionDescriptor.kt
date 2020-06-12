@@ -26,6 +26,7 @@ import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.execution.process.ColoredProcessHandler
 import com.intellij.execution.services.SimpleServiceViewDescriptor
 import com.intellij.execution.ui.ConsoleView
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.components.service
@@ -33,12 +34,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanelWithEmptyText
 import com.microsoft.icons.CommonIcons
 import org.jetbrains.plugins.azure.RiderAzureBundle
-import org.jetbrains.plugins.azure.storage.azurite.actions.StartAzuriteAction
+import org.jetbrains.plugins.azure.storage.azurite.actions.CleanAzuriteAction
 import org.jetbrains.plugins.azure.storage.azurite.actions.ShowAzuriteSettingsAction
+import org.jetbrains.plugins.azure.storage.azurite.actions.StartAzuriteAction
 import org.jetbrains.plugins.azure.storage.azurite.actions.StopAzuriteAction
 import java.awt.BorderLayout
 import javax.swing.BorderFactory
-import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.JPanel
 
@@ -49,6 +50,7 @@ open class AzuriteServiceViewSessionDescriptor(private val project: Project)
         val defaultToolbarActions = DefaultActionGroup(
                 StartAzuriteAction(),
                 StopAzuriteAction(),
+                CleanAzuriteAction(),
                 ShowAzuriteSettingsAction()
         )
     }
@@ -67,16 +69,11 @@ open class AzuriteServiceViewSessionDescriptor(private val project: Project)
     override fun getPresentation(): ItemPresentation {
 
         val superPresentation = super.getPresentation()
-        if (workspace != null) {
-            return object : ItemPresentation {
-                override fun getLocationString(): String? = workspace
-
-                override fun getIcon(p: Boolean) = superPresentation.getIcon(p)
-
-                override fun getPresentableText() = superPresentation.presentableText
-            }
+        return object : ItemPresentation {
+            override fun getLocationString(): String? = workspace
+            override fun getIcon(p: Boolean) = superPresentation.getIcon(p)
+            override fun getPresentableText() = superPresentation.presentableText
         }
-        return superPresentation
     }
 
     override fun getContentComponent(): JComponent? {
@@ -88,7 +85,9 @@ open class AzuriteServiceViewSessionDescriptor(private val project: Project)
                 processHandler = activeProcessHandler
                 workspace = azuriteService.workspace
 
+                consoleView.print(RiderAzureBundle.message("action.azurite.reattach.workspace", workspace.orEmpty()) + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
                 consoleView.attachToProcess(activeProcessHandler)
+                consoleView.print(RiderAzureBundle.message("action.azurite.reattach.finished") + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
             }
         }
 

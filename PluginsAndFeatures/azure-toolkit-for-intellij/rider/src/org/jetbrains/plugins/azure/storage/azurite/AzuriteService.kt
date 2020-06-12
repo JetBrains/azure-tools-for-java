@@ -30,6 +30,7 @@ import com.intellij.execution.services.ServiceEventListener
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Key
+import java.io.File
 
 class AzuriteService {
 
@@ -73,6 +74,17 @@ class AzuriteService {
             })
             it.startNotify()
             syncServices()
+        }
+    }
+
+    fun clean(workspace: File) {
+        if (isRunning) stop()
+
+        try {
+            workspace.deleteRecursively()
+            workspace.mkdir()
+        } catch (e: Exception) {
+            logger.error("Error during clean", e)
         }
     }
 

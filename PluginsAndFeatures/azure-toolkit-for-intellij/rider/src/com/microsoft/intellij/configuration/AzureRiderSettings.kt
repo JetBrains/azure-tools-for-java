@@ -22,7 +22,15 @@
 
 package com.microsoft.intellij.configuration
 
+import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.application.PathManager
+import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.azure.orWhenNullOrEmpty
+import org.jetbrains.plugins.azure.storage.azurite.Azurite
+import java.io.File
+
 object AzureRiderSettings {
+
     // Web Apps
     const val PROPERTY_WEB_APP_OPEN_IN_BROWSER_NAME = "AzureOpenWebAppInBrowser"
     const val OPEN_IN_BROWSER_AFTER_PUBLISH_DEFAULT_VALUE = false
@@ -37,19 +45,44 @@ object AzureRiderSettings {
     const val PROPERTY_AZURITE_NODE_PACKAGE = "AzureAzuriteNodePackage"
 
     const val PROPERTY_AZURITE_BLOB_HOST = "AzureAzuriteBlobHost"
-    const val PROPERTY_AZURITE_BLOB_HOST_DEFAULT = "127.0.0.1"
+    const val VALUE_AZURITE_BLOB_HOST_DEFAULT = "127.0.0.1"
     const val PROPERTY_AZURITE_BLOB_PORT = "AzureAzuriteBlobPort"
-    const val PROPERTY_AZURITE_BLOB_PORT_DEFAULT = "10000"
+    const val VALUE_AZURITE_BLOB_PORT_DEFAULT = "10000"
 
     const val PROPERTY_AZURITE_QUEUE_HOST = "AzureAzuriteQueueHost"
-    const val PROPERTY_AZURITE_QUEUE_HOST_DEFAULT = "127.0.0.1"
+    const val VALUE_AZURITE_QUEUE_HOST_DEFAULT = "127.0.0.1"
     const val PROPERTY_AZURITE_QUEUE_PORT = "AzureAzuriteQueuePort"
-    const val PROPERTY_AZURITE_QUEUE_PORT_DEFAULT = "10001"
+    const val VALUE_AZURITE_QUEUE_PORT_DEFAULT = "10001"
 
+    const val PROPERTY_AZURITE_LOCATION_MODE = "AzureAzuriteLocationMode"
+    const val VALUE_AZURITE_LOCATION_MODE_MANAGED = "managed"
+    const val VALUE_AZURITE_LOCATION_MODE_PROJECT = "project"
+    const val VALUE_AZURITE_LOCATION_MODE_CUSTOM = "custom"
     const val PROPERTY_AZURITE_LOCATION = "AzureAzuriteLocation"
     const val PROPERTY_AZURITE_LOOSE_MODE = "AzureAzuriteLooseMode"
 
     const val PROPERTY_AZURITE_CERT_PATH = "AzureAzuriteCertPath"
     const val PROPERTY_AZURITE_CERT_KEY_PATH = "AzureAzuriteCertKeyPath"
     const val PROPERTY_AZURITE_CERT_PASSWORD = "AzureAzuriteCertPassword"
+
+    fun getAzuriteWorkspacePath(properties: PropertiesComponent, project: Project): File {
+        val azuriteWorkspaceLocationMode = properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_LOCATION_MODE).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_MANAGED)
+        return when {
+            azuriteWorkspaceLocationMode == AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_MANAGED -> {
+                val workspace = File(PathManager.getConfigPath(), Azurite.ManagedPathSuffix)
+                workspace.mkdir()
+                workspace
+            }
+            azuriteWorkspaceLocationMode == AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_PROJECT -> {
+                val workspace = File(project.basePath, Azurite.ProjectPathSuffix)
+                workspace.mkdir()
+                workspace
+            }
+            azuriteWorkspaceLocationMode == AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_CUSTOM -> {
+                val workspace = File(properties.getValue(PROPERTY_AZURITE_LOCATION))
+                workspace
+            }
+            else -> throw UnsupportedOperationException("Workspace location mode " + azuriteWorkspaceLocationMode + " is not supported.")
+        }
+    }
 }

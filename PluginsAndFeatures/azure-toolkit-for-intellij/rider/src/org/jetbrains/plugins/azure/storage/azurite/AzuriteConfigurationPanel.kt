@@ -30,13 +30,13 @@ import com.intellij.javascript.nodejs.util.NodePackageField
 import com.intellij.javascript.nodejs.util.NodePackageRef
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.layout.GrowPolicy
-import com.intellij.ui.layout.PropertyBinding
-import com.intellij.ui.layout.panel
+import com.intellij.ui.ColoredListCellRenderer
+import com.intellij.ui.layout.*
 import com.intellij.util.ui.SwingHelper
 import com.intellij.webcore.ui.PathShortener
 import com.microsoft.intellij.configuration.AzureRiderSettings
@@ -44,9 +44,7 @@ import com.microsoft.intellij.configuration.ui.AzureRiderAbstractConfigurablePan
 import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.orWhenNullOrEmpty
 import sun.net.util.IPAddressUtil
-import javax.swing.JLabel
-import javax.swing.JPasswordField
-import javax.swing.JTextField
+import javax.swing.*
 
 @Suppress("UNUSED_LAMBDA_EXPRESSION")
 class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstractConfigurablePanel {
@@ -101,22 +99,46 @@ class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstra
 
                 titledRow(RiderAzureBundle.message("settings.azurite.row.general")) {
                     // Workspace folder
-                    val locationField = TextFieldWithBrowseButton().apply {
-                        SwingHelper.installFileCompletionAndBrowseDialog(project, this, RiderAzureBundle.message("settings.azurite.row.general.workspace.browse"), FileChooserDescriptorFactory.createSingleFolderDescriptor())
-                        PathShortener.enablePathShortening(this.getTextField(), null as JTextField?)
+                    lateinit var workspaceLocationCombo: CellBuilder<ComboBox<String>>
+                    row(RiderAzureBundle.message("settings.azurite.row.general.workspace")) {
+                        cell {
+                            workspaceLocationCombo = comboBox(
+                                    DefaultComboBoxModel(arrayOf(AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_MANAGED, AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_PROJECT, AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_CUSTOM)),
+                                    { properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_LOCATION_MODE).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_MANAGED) },
+                                    { properties.setValue(AzureRiderSettings.PROPERTY_AZURITE_LOCATION_MODE, it) },
+                                    object : ColoredListCellRenderer<String>() {
+                                        override fun customizeCellRenderer(list: JList<out String>, value: String?, index: Int, selected: Boolean, hasFocus: Boolean) {
+                                            val labelText = when {
+                                                value == AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_MANAGED -> RiderAzureBundle.message("settings.azurite.row.general.workspace.use_managed")
+                                                value == AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_PROJECT -> RiderAzureBundle.message("settings.azurite.row.general.workspace.use_project")
+                                                value == AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_CUSTOM -> RiderAzureBundle.message("settings.azurite.row.general.workspace.use_custom")
+                                                else -> value ?: "null"
+                                            }
+
+                                            this.clear()
+                                            this.append(labelText)
+                                        }
+                                    })
+                        }
                     }
-                    row(JLabel(RiderAzureBundle.message("settings.azurite.row.general.workspace")).apply { labelFor = locationField }) {
-                        locationField(comment = RiderAzureBundle.message("settings.azurite.row.general.workspace.comment")).withBinding(
-                                { it.textField.text },
-                                { _, _ -> { } },
-                                PropertyBinding(
-                                        { properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_LOCATION) },
-                                        { properties.setValue(AzureRiderSettings.PROPERTY_AZURITE_LOCATION, it) })
-                        )
+                    row("") {
+                        cell {
+                            val locationField = TextFieldWithBrowseButton().apply {
+                                SwingHelper.installFileCompletionAndBrowseDialog(project, this, RiderAzureBundle.message("settings.azurite.row.general.workspace.browse"), FileChooserDescriptorFactory.createSingleFolderDescriptor())
+                                PathShortener.enablePathShortening(this.getTextField(), null as JTextField?)
+                            }
+                            locationField(comment = RiderAzureBundle.message("settings.azurite.row.general.workspace.comment")).withBinding(
+                                    { it.textField.text },
+                                    { _, _ -> { } },
+                                    PropertyBinding(
+                                            { properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_LOCATION) },
+                                            { properties.setValue(AzureRiderSettings.PROPERTY_AZURITE_LOCATION, it) })
+                            ).enableIf(workspaceLocationCombo.component.selectedValueIs(AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_CUSTOM))
+                        }
                     }
 
                     // Loose mode
-                    row("") {
+                    row {
                         cell {
                             checkBox(RiderAzureBundle.message("settings.azurite.row.general.loosemode"),
                                     { properties.getBoolean(AzureRiderSettings.PROPERTY_AZURITE_LOOSE_MODE) },
@@ -132,7 +154,7 @@ class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstra
                         blobHostLabel()
 
                         cell {
-                            textField({ properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_BLOB_HOST).orWhenNullOrEmpty(AzureRiderSettings.PROPERTY_AZURITE_BLOB_HOST_DEFAULT) },
+                            textField({ properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_BLOB_HOST).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_BLOB_HOST_DEFAULT) },
                                     { properties.setValue(AzureRiderSettings.PROPERTY_AZURITE_BLOB_HOST, it) })
                                     .withValidationOnInput {
                                         if (it.text.isNullOrEmpty() || !IPAddressUtil.isIPv4LiteralAddress(it.text)) {
@@ -146,7 +168,7 @@ class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstra
                         }
 
                         cell {
-                            textField({ properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_BLOB_PORT).orWhenNullOrEmpty(AzureRiderSettings.PROPERTY_AZURITE_BLOB_PORT_DEFAULT) },
+                            textField({ properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_BLOB_PORT).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_BLOB_PORT_DEFAULT) },
                                     { properties.setValue(AzureRiderSettings.PROPERTY_AZURITE_BLOB_PORT, it) })
                                     .withValidationOnInput {
                                         if (it.text.toIntOrNull() == null) {
@@ -165,7 +187,7 @@ class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstra
                         queueHostLabel()
 
                         cell {
-                            textField({ properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_HOST).orWhenNullOrEmpty(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_HOST_DEFAULT) },
+                            textField({ properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_HOST).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_QUEUE_HOST_DEFAULT) },
                                     { properties.setValue(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_HOST, it) })
                                     .withValidationOnInput {
                                         if (it.text.isNullOrEmpty() || !IPAddressUtil.isIPv4LiteralAddress(it.text)) {
@@ -179,7 +201,7 @@ class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstra
                         }
 
                         cell {
-                            textField({ properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_PORT).orWhenNullOrEmpty(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_PORT_DEFAULT) },
+                            textField({ properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_PORT).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_QUEUE_PORT_DEFAULT) },
                                     { properties.setValue(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_PORT, it) })
                                     .withValidationOnInput {
                                         if (it.text.toIntOrNull() == null) {

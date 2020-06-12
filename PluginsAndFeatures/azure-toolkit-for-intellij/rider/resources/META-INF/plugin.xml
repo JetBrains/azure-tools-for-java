@@ -292,7 +292,7 @@
     <!-- Azure Storage / Azurite -->
     <group id="AzureToolkit.AzuriteGroup"
            class="com.intellij.openapi.actionSystem.DefaultActionGroup"
-           text="Azurite"
+           text="Azurite Storage Emulator"
            description="Contains Azurite actions">
 
       <add-to-group group-id="AzureToolkit.AzureActionGroup"
@@ -304,6 +304,13 @@
               text="Start Azurite"
               description="Start Azurite Storage Emulator"
               icon="AllIcons.Actions.Execute">
+      </action>
+
+      <action id="AzureToolkit.Azurite.StopAzurite"
+              class="org.jetbrains.plugins.azure.storage.azurite.actions.StopAzuriteAction"
+              text="Stop Azurite"
+              description="Stop Azurite Storage Emulator"
+              icon="AllIcons.Actions.Suspend">
       </action>
 
       <separator />

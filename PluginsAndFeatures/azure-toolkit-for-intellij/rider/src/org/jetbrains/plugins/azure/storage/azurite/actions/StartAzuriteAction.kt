@@ -39,7 +39,6 @@ import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.orWhenNullOrEmpty
 import org.jetbrains.plugins.azure.storage.azurite.Azurite
 import org.jetbrains.plugins.azure.storage.azurite.AzuriteService
-import java.io.File
 
 class StartAzuriteAction
     : AnAction(
@@ -81,22 +80,21 @@ class StartAzuriteAction
         ApplicationManager.getApplication().runWriteAction {
 
             val azuriteJsFile = azuritePackage.findBinFile("azurite", null)!!
-            val azuriteWorkspaceLocation = properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_LOCATION).orWhenNullOrEmpty(File(project.basePath, ".idea/azurite").absolutePath)
-            File(azuriteWorkspaceLocation).mkdir()
+            val azuriteWorkspaceLocation = AzureRiderSettings.getAzuriteWorkspacePath(properties, project).absolutePath
 
             val commandLine = GeneralCommandLine(
                     nodeJsLocalInterpreter.interpreterSystemDependentPath,
                     azuriteJsFile.absolutePath,
 
                     "--blobHost",
-                    properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_BLOB_HOST).orWhenNullOrEmpty(AzureRiderSettings.PROPERTY_AZURITE_BLOB_HOST_DEFAULT),
+                    properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_BLOB_HOST).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_BLOB_HOST_DEFAULT),
                     "--blobPort",
-                    properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_BLOB_PORT).orWhenNullOrEmpty(AzureRiderSettings.PROPERTY_AZURITE_BLOB_PORT_DEFAULT),
+                    properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_BLOB_PORT).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_BLOB_PORT_DEFAULT),
 
                     "--queueHost",
-                    properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_HOST).orWhenNullOrEmpty(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_HOST_DEFAULT),
+                    properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_HOST).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_QUEUE_HOST_DEFAULT),
                     "--queuePort",
-                    properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_PORT).orWhenNullOrEmpty(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_PORT_DEFAULT),
+                    properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_QUEUE_PORT).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_QUEUE_PORT_DEFAULT),
 
                     "--location",
                     azuriteWorkspaceLocation)
@@ -129,5 +127,3 @@ class StartAzuriteAction
     }
 
 }
-
-
