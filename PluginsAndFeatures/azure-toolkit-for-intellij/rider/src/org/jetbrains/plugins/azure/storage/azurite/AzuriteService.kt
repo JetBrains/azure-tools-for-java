@@ -27,8 +27,8 @@ import com.intellij.execution.process.ColoredProcessHandler
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.services.ServiceEventListener
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import java.io.File
 
@@ -54,7 +54,7 @@ class AzuriteService {
             return currentHandler != null && !currentHandler.isProcessTerminated
         }
 
-    fun start(commandLine: GeneralCommandLine, workspaceLocation: String) {
+    fun start(project: Project, commandLine: GeneralCommandLine, workspaceLocation: String) {
         if (processHandler != null) {
             logger.warn("start() was called while processHandler was not null. The caller should verify if an existing session is running, before calling start()")
             return
@@ -73,12 +73,12 @@ class AzuriteService {
                 override fun startNotified(e: ProcessEvent) { }
             })
             it.startNotify()
-            syncServices()
+            syncServices(project)
         }
     }
 
-    fun clean(workspace: File) {
-        if (isRunning) stop()
+    fun clean(project: Project, workspace: File) {
+        if (isRunning) stop(project)
 
         try {
             workspace.deleteRecursively()
@@ -88,7 +88,7 @@ class AzuriteService {
         }
     }
 
-    fun stop() {
+    fun stop(project: Project) {
         if (processHandler == null) return
 
         processHandler?.let {
@@ -98,12 +98,12 @@ class AzuriteService {
                 if (!it.isProcessTerminating && !it.isProcessTerminated) {
                     it.killProcess()
                 }
-                syncServices()
+                syncServices(project)
             }
         }
     }
 
-    private fun syncServices() =
-            ApplicationManager.getApplication().messageBus.syncPublisher(ServiceEventListener.TOPIC)
+    private fun syncServices(project: Project) =
+            project.messageBus.syncPublisher(ServiceEventListener.TOPIC)
                     .handle(ServiceEventListener.ServiceEvent.createResetEvent(AzuriteServiceViewContributor.AzuriteSession::class.java))
 }

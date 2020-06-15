@@ -107,17 +107,11 @@ class AzuriteConfigurationPanel(private val project: Project) : AzureRiderAbstra
                             workspaceLocationCombo = comboBox(
                                     DefaultComboBoxModel(arrayOf(AzureRiderSettings.AzuriteLocationMode.Managed, AzureRiderSettings.AzuriteLocationMode.Project, AzureRiderSettings.AzuriteLocationMode.Custom)),
                                     { AzureRiderSettings.getAzuriteWorkspaceMode(properties) },
-                                    { properties.setValue(AzureRiderSettings.PROPERTY_AZURITE_LOCATION_MODE, it?.value ?: AzureRiderSettings.AzuriteLocationMode.Managed.value ) },
+                                    { properties.setValue(AzureRiderSettings.PROPERTY_AZURITE_LOCATION_MODE, it?.name ?: AzureRiderSettings.AzuriteLocationMode.Managed.name ) },
                                     object : ColoredListCellRenderer<AzureRiderSettings.AzuriteLocationMode>() {
                                         override fun customizeCellRenderer(list: JList<out AzureRiderSettings.AzuriteLocationMode>, value: AzureRiderSettings.AzuriteLocationMode, index: Int, selected: Boolean, hasFocus: Boolean) {
-                                            val labelText = when(value) {
-                                                AzureRiderSettings.AzuriteLocationMode.Managed -> RiderAzureBundle.message("settings.azurite.row.general.workspace.use_managed")
-                                                AzureRiderSettings.AzuriteLocationMode.Project -> RiderAzureBundle.message("settings.azurite.row.general.workspace.use_project")
-                                                AzureRiderSettings.AzuriteLocationMode.Custom -> RiderAzureBundle.message("settings.azurite.row.general.workspace.use_custom")
-                                            }
-
                                             this.clear()
-                                            this.append(labelText)
+                                            this.append(value.description)
                                         }
                                     })
                         }

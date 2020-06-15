@@ -70,7 +70,7 @@ class CleanAzuriteAction
         )
         if (shouldPerformClean) {
             ApplicationManager.getApplication().runWriteAction {
-                azuriteService.clean(AzureRiderSettings.getAzuriteWorkspacePath(properties, project))
+                azuriteService.clean(project, AzureRiderSettings.getAzuriteWorkspacePath(properties, project))
             }
         }
     }
