@@ -130,7 +130,7 @@ class StartAzuriteAction
                 }
             }
 
-            azuriteService.start(project, commandLine, azuriteWorkspaceLocation)
+            azuriteService.start(commandLine, azuriteWorkspaceLocation)
         }
 
     }

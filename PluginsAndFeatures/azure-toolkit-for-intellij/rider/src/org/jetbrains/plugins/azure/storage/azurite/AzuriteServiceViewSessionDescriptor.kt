@@ -67,6 +67,7 @@ open class AzuriteServiceViewSessionDescriptor(private val project: Project)
     override fun getToolbarActions() = defaultToolbarActions
 
     override fun getPresentation(): ItemPresentation {
+        ensureConsoleView()
 
         val superPresentation = super.getPresentation()
         return object : ItemPresentation {
@@ -77,7 +78,11 @@ open class AzuriteServiceViewSessionDescriptor(private val project: Project)
     }
 
     override fun getContentComponent(): JComponent? {
+        ensureConsoleView()
+        return panel
+    }
 
+    private fun ensureConsoleView() {
         azuriteService.processHandler?.let { activeProcessHandler ->
 
             if (processHandler != activeProcessHandler) {
@@ -94,8 +99,6 @@ open class AzuriteServiceViewSessionDescriptor(private val project: Project)
         if (processHandler != null && panel.components.isEmpty()) {
             panel.add(consoleView.component, BorderLayout.CENTER)
         }
-
-        return panel
     }
 
     private fun createEmptyComponent(): JPanel {

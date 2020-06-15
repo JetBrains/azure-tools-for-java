@@ -43,7 +43,7 @@ class StopAzuriteAction
 
     override fun actionPerformed(e: AnActionEvent) {
         if (azuriteService.isRunning) {
-            azuriteService.stop(e.project!!)
+            azuriteService.stop()
         }
     }
 
