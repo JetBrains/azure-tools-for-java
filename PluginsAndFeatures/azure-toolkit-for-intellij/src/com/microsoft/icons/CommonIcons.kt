@@ -46,7 +46,7 @@ object CommonIcons {
 
     val PublishAzure by lazy { load("publishAzure.svg") }
 
-    val Azurite by lazy { load("ExternalStorageAccount.svg") }
+    val Azurite by lazy { load("AzureStorageEmulator.svg") }
 
     object OS {
         val Windows by lazy { load("OSWindows.svg") }
