@@ -25,7 +25,6 @@ package com.microsoft.intellij.configuration
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.azure.orWhenNullOrEmpty
 import org.jetbrains.plugins.azure.storage.azurite.Azurite
 import java.io.File
 
@@ -55,34 +54,50 @@ object AzureRiderSettings {
     const val VALUE_AZURITE_QUEUE_PORT_DEFAULT = "10001"
 
     const val PROPERTY_AZURITE_LOCATION_MODE = "AzureAzuriteLocationMode"
-    const val VALUE_AZURITE_LOCATION_MODE_MANAGED = "managed"
-    const val VALUE_AZURITE_LOCATION_MODE_PROJECT = "project"
-    const val VALUE_AZURITE_LOCATION_MODE_CUSTOM = "custom"
     const val PROPERTY_AZURITE_LOCATION = "AzureAzuriteLocation"
+
+    enum class AzuriteLocationMode(val value: String) {
+        Managed("managed"),
+        Project("project"),
+        Custom("custom")
+    }
+
     const val PROPERTY_AZURITE_LOOSE_MODE = "AzureAzuriteLooseMode"
 
     const val PROPERTY_AZURITE_CERT_PATH = "AzureAzuriteCertPath"
     const val PROPERTY_AZURITE_CERT_KEY_PATH = "AzureAzuriteCertKeyPath"
     const val PROPERTY_AZURITE_CERT_PASSWORD = "AzureAzuriteCertPassword"
 
+    fun getAzuriteWorkspaceMode(properties: PropertiesComponent): AzuriteLocationMode = try {
+        AzuriteLocationMode.valueOf(PROPERTY_AZURITE_LOCATION_MODE)
+    } catch (e: IllegalArgumentException) {
+        AzuriteLocationMode.Managed
+    }
+
     fun getAzuriteWorkspacePath(properties: PropertiesComponent, project: Project): File {
-        val azuriteWorkspaceLocationMode = properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_LOCATION_MODE).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_MANAGED)
-        return when {
-            azuriteWorkspaceLocationMode == AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_MANAGED -> {
+
+        return when(getAzuriteWorkspaceMode(properties)) {
+            AzuriteLocationMode.Managed -> {
                 val workspace = File(PathManager.getConfigPath(), Azurite.ManagedPathSuffix)
                 workspace.mkdir()
                 workspace
             }
-            azuriteWorkspaceLocationMode == AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_PROJECT -> {
+            AzuriteLocationMode.Project -> {
                 val workspace = File(project.basePath, Azurite.ProjectPathSuffix)
                 workspace.mkdir()
                 workspace
             }
-            azuriteWorkspaceLocationMode == AzureRiderSettings.VALUE_AZURITE_LOCATION_MODE_CUSTOM -> {
-                val workspace = File(properties.getValue(PROPERTY_AZURITE_LOCATION))
-                workspace
+            AzuriteLocationMode.Custom -> {
+                val customPath = properties.getValue(PROPERTY_AZURITE_LOCATION)
+                if (customPath.isNullOrEmpty()) {
+                    val workspace = File(customPath)
+                    workspace
+                } else {
+                    val workspace = File(PathManager.getConfigPath(), Azurite.ManagedPathSuffix)
+                    workspace.mkdir()
+                    workspace
+                }
             }
-            else -> throw UnsupportedOperationException("Workspace location mode " + azuriteWorkspaceLocationMode + " is not supported.")
         }
     }
 }

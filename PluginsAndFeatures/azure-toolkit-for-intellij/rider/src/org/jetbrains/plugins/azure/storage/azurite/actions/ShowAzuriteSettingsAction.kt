@@ -23,11 +23,10 @@
 package org.jetbrains.plugins.azure.storage.azurite.actions
 
 import com.intellij.icons.AllIcons
-import com.intellij.ide.actions.ShowSettingsUtilImpl
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.microsoft.intellij.AzureConfigurable
 import org.jetbrains.plugins.azure.RiderAzureBundle
+import org.jetbrains.plugins.azure.storage.azurite.Azurite
 
 class ShowAzuriteSettingsAction
     : AnAction(
@@ -38,7 +37,6 @@ class ShowAzuriteSettingsAction
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 
-        // TODO: FIX_LOCALIZATION: Using displayName parameter here for Settings ID need to be fixed to use ID to avoid localization issues.
-        ShowSettingsUtilImpl.showSettingsDialog(project, AzureConfigurable.AZURE_CONFIGURABLE_PREFIX + RiderAzureBundle.message("settings.azurite.name"), "")
+        Azurite.showSettings(project)
     }
 }

@@ -27,7 +27,6 @@ package org.jetbrains.plugins.azure.storage.azurite.actions
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PropertiesComponent
-import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreter
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
 import com.intellij.javascript.nodejs.interpreter.local.NodeJsLocalInterpreter
 import com.intellij.openapi.actionSystem.AnAction
@@ -71,10 +70,20 @@ class StartAzuriteAction
 
         val properties = PropertiesComponent.getInstance(project)
         val nodeJsInterpreterRef = NodeJsInterpreterRef.create(properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_NODE_INTERPRETER) ?: "project")
-        val nodeJsInterpreter: NodeJsInterpreter = nodeJsInterpreterRef.resolve(project) ?: return
+        val nodeJsInterpreter = nodeJsInterpreterRef.resolve(project)
+        if (nodeJsInterpreter == null) {
+            Azurite.showSettings(project)
+            return
+        }
+
         val nodeJsLocalInterpreter = NodeJsLocalInterpreter.castAndValidate(nodeJsInterpreter)
 
-        val packagePath = properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_NODE_PACKAGE) ?: return // TODO
+        val packagePath = properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_NODE_PACKAGE)
+        if (packagePath.isNullOrEmpty()) {
+            Azurite.showSettings(project)
+            return
+        }
+
         val azuritePackage = Azurite.PackageDescriptor.createPackage(packagePath)
 
         ApplicationManager.getApplication().runWriteAction {

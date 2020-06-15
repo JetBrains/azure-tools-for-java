@@ -22,7 +22,11 @@
 
 package org.jetbrains.plugins.azure.storage.azurite
 
+import com.intellij.ide.actions.ShowSettingsUtilImpl
 import com.intellij.javascript.nodejs.util.NodePackageDescriptor
+import com.intellij.openapi.project.Project
+import com.microsoft.intellij.AzureConfigurable
+import org.jetbrains.plugins.azure.RiderAzureBundle
 
 object Azurite {
     const val PackageName = "azurite"
@@ -30,4 +34,9 @@ object Azurite {
 
     const val ManagedPathSuffix = "azurite"
     const val ProjectPathSuffix = ".idea/azurite"
+
+    fun showSettings(project: Project) {
+        // TODO: FIX_LOCALIZATION: Using displayName parameter here for Settings ID need to be fixed to use ID to avoid localization issues.
+        ShowSettingsUtilImpl.showSettingsDialog(project, AzureConfigurable.AZURE_CONFIGURABLE_PREFIX + RiderAzureBundle.message("settings.azurite.name"), "")
+    }
 }
