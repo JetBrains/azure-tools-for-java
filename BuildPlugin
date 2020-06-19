@@ -66,15 +66,23 @@ tc_open "Initializing build script"
     echo "Creating maven local directory $MAVEN_LOCAL_DIR"
     mkdir -p "$MAVEN_LOCAL_DIR"
 
+    # Plugin Artifacts
     ARTIFACTS_DIR="$SCRIPTPATH/artifacts"
     if [ ! -d "$ARTIFACTS_DIR" ]; then
         echo "Creating artifacts directory $ARTIFACTS_DIR"
         mkdir -p "$ARTIFACTS_DIR"
     fi
 
+    # Utils Artifacts
     UTILS_ARTIFACTS_DIR="$SCRIPTPATH/utilsArtifacts"
     if [ ! -d "$UTILS_ARTIFACTS_DIR" ]; then
         echo "Unable to find Utils artifacts directory: '$UTILS_ARTIFACTS_DIR'"
+        exit 1
+    fi
+
+    UTILS_ARTIFACTS_COMMON_DIR="$UTILS_ARTIFACTS_DIR"/common
+    if [ ! -d "$UTILS_ARTIFACTS_COMMON_DIR" ]; then
+        echo "Unable to find Utils artifacts common directory: '$UTILS_ARTIFACTS_COMMON_DIR'"
         exit 1
     fi
 
@@ -84,35 +92,27 @@ tc_close "Initializing build script"
 
 prepare_maven_repository() {
     set +x
-    cp -r "$UTILS_ARTIFACTS_DIR"/repository/.repository "$SCRIPTPATH"
-    set -x
-}
-
-prepare_azure_sdk_dependency() {
-    set +x
-    local azureSdkDir="$SCRIPTPATH"/PluginsAndFeatures/AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk
-    cp -r "$UTILS_ARTIFACTS_DIR"/azure-sdk/dependencies "$azureSdkDir"
+    cp -r "$UTILS_ARTIFACTS_COMMON_DIR"/maven_local/.repository "$SCRIPTPATH"
     set -x
 }
 
 prepare_spark_jars() {
     set +x
     local sparkResourceDir="$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-intellij/resources/spark/
-    cp "$UTILS_ARTIFACTS_DIR"/spark-tools/spark-tools-*.jar "$sparkResourceDir"
+    cp "$UTILS_ARTIFACTS_COMMON_DIR"/spark/spark-tools-*.jar "$sparkResourceDir"
     set -x
 }
 
 prepare_applicationinsights_management_jars() {
     set +x
     local azureSdkDir="$SCRIPTPATH"/PluginsAndFeatures/AddLibrary/AzureLibraries/com.microsoft.azuretools.sdk/dependencies
-    cp "$UTILS_ARTIFACTS_DIR"/lib/applicationinsights-management-*.jar "$azureSdkDir"
+    cp "$UTILS_ARTIFACTS_COMMON_DIR"/applicationinsights/applicationinsights-management-*.jar "$azureSdkDir"
     set -x
 }
 
 tc_open "Prepare JAR dependencies"
 {
     prepare_maven_repository
-    prepare_azure_sdk_dependency
     prepare_spark_jars
     prepare_applicationinsights_management_jars
 
@@ -124,6 +124,7 @@ tc_close "Prepare JAR dependencies"
 if $BUILD_ECLIPSE; then
     tc_open "Building Eclipse plugin"
     {
+        mvn clean install -B -f "$SCRIPTPATH"/PluginsAndFeatures/AddLibrary/AzureLibraries/pom.xml -Dmaven.repo.local="$MAVEN_LOCAL_DIR" $MAVEN_QUIET
         mvn clean install -B -f "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-eclipse/pom.xml $MAVEN_QUIET
         rm -rf "$SCRIPTPATH"/PluginsAndFeatures/azure-toolkit-for-eclipse/
         df -h
