@@ -87,6 +87,10 @@ configure(mainProjects) {
     compileJava {
         sourceCompatibility = javaVersion
         targetCompatibility = javaVersion
+
+        doFirst {
+            println "JDK = ${org.gradle.internal.jvm.Jvm.current()}"
+        }
     }
 
     compileKotlin {

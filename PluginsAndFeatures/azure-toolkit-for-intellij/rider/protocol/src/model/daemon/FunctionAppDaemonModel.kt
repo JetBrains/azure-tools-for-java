@@ -30,7 +30,10 @@ import com.jetbrains.rd.generator.nova.Ext
 import com.jetbrains.rd.generator.nova.ExternalGenerator
 import com.jetbrains.rd.generator.nova.FlowTransform
 import com.jetbrains.rd.generator.nova.GeneratorBase
+import com.jetbrains.rd.generator.nova.PredefinedType.bool
 import com.jetbrains.rd.generator.nova.PredefinedType.string
+import com.jetbrains.rd.generator.nova.PredefinedType.void
+import com.jetbrains.rd.generator.nova.call
 import com.jetbrains.rd.generator.nova.field
 import com.jetbrains.rd.generator.nova.setting
 import com.jetbrains.rd.generator.nova.sink
@@ -69,5 +72,7 @@ object FunctionAppDaemonModel : Ext(SolutionModel.Solution) {
 
         sink("triggerFunctionApp", FunctionAppRequest)
                 .doc("Signal from backend to trigger a Function App.")
+
+        call("isBackendWorking", void, bool)
     }
 }

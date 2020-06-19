@@ -32,6 +32,12 @@ namespace JetBrains.ReSharper.Azure.Daemon.FunctionApp
         public FunctionAppDaemonHost(ISolution solution)
         {
             _model = solution.GetProtocolSolution().GetFunctionAppDaemonModel();
+            _model.IsBackendWorking.Set((lifetime, unit) =>
+            {
+                var task = new Rd.Tasks.RdTask<bool>();
+                task.Set(true);
+                return task;
+            });
         }
         
         public void RunFunctionApp(string methodName, string functionName, string projectFilePath)
