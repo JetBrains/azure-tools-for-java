@@ -31,6 +31,7 @@ import com.microsoft.azuretools.core.mvp.ui.rediscache.RedisValueData;
 import com.microsoft.intellij.helpers.base.BaseEditor;
 import com.microsoft.intellij.ui.components.AzureActionListenerWrapper;
 import com.microsoft.intellij.ui.components.AzureListSelectionListenerWrapper;
+import com.microsoft.intellij.ui.components.EnvironmentUtil;
 import com.microsoft.tooling.msservices.components.DefaultLoader;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerMvpView;
 import com.microsoft.tooling.msservices.serviceexplorer.azure.rediscache.RedisExplorerPresenter;
@@ -223,7 +224,7 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
         RedisKeyType type = val.getKeyType();
         lblTypeValue.setText(type.toString());
         lblKeyValue.setText((String) lstKey.getSelectedValue());
-        if (type.equals(RedisKeyType.STRING)) {
+        if (type == RedisKeyType.STRING) {
             if (val.getRowData().size() > 0 && val.getRowData().get(0).length > 0) {
                 txtStringValue.setText(val.getRowData().get(0)[0]);
             }
@@ -276,7 +277,8 @@ public class RedisCacheExplorer extends BaseEditor implements RedisExplorerMvpVi
     @Override
     public void onErrorWithException(String message, Exception ex) {
         setWidgetEnableStatus(true);
-        throw new Exception("Redis cache exception: " + message);
+        DefaultLoader.getUIHelper().logError(
+                "Redis cache exception: " + message + System.lineSeparator() + ex.getMessage(), ex);
     }
 
     private void onDataBaseSelect() {
