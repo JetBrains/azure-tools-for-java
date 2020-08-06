@@ -24,9 +24,9 @@ package org.jetbrains.plugins.azure.managedidentity
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.openapi.util.Disposer
 import com.intellij.ui.layout.Row
 import com.intellij.ui.layout.panel
 import com.microsoft.azuretools.authmanage.AuthMethod
@@ -35,11 +35,10 @@ import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.intellij.configuration.ui.AzureRiderAbstractConfigurablePanel
 import org.jetbrains.plugins.azure.RiderAzureBundle
 
-
 @Suppress("UNUSED_LAMBDA_EXPRESSION")
 class AzureManagedIdentityConfigurationPanel(private val project: Project) : AzureRiderAbstractConfigurablePanel {
 
-    private val disposable = Disposer.newDisposable()
+    private val logger = Logger.getInstance(AzureRiderAbstractConfigurablePanel::class.java)
 
     private fun createPanel(): DialogPanel =
             panel {
@@ -69,7 +68,7 @@ class AzureManagedIdentityConfigurationPanel(private val project: Project) : Azu
                                     rowRequiresSignIn.subRowsVisible = false
                                 }
                             } catch (e: Exception) {
-                                e.printStackTrace()
+                                logger.error("Error while signing in with Azure CLI", e)
                             }
                         }
                     }
@@ -108,7 +107,5 @@ class AzureManagedIdentityConfigurationPanel(private val project: Project) : Azu
 
     override fun doOKAction() {
         panel.apply()
-
-        Disposer.dispose(disposable)
     }
 }
