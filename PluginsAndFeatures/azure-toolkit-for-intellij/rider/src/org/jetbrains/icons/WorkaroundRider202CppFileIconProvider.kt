@@ -33,6 +33,9 @@ import javax.swing.Icon
 
 // NOTE: This class should be removed after CppFileIconProvider is updated to not override icons
 // for our editors (e.g. blob container browser)
+@Deprecated(
+        message = "This should be removed. See https://github.com/JetBrains/azure-tools-for-intellij/pull/352",
+        level = DeprecationLevel.WARNING)
 class WorkaroundRider202CppFileIconProvider : IconProvider() {
 
     override fun getIcon(element: PsiElement, @Iconable.IconFlags flags: Int): Icon? {
