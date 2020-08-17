@@ -24,71 +24,125 @@ package org.jetbrains.plugins.azure.identity.managed
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.components.JBList
+import com.intellij.ui.layout.CellBuilder
 import com.intellij.ui.layout.Row
 import com.intellij.ui.layout.panel
+import com.intellij.util.ui.UIUtil
 import com.microsoft.azuretools.authmanage.AuthMethod
 import com.microsoft.azuretools.authmanage.AuthMethodManager
+import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.intellij.configuration.ui.AzureRiderAbstractConfigurablePanel
 import org.jetbrains.plugins.azure.RiderAzureBundle
+import javax.swing.JButton
 
 @Suppress("UNUSED_LAMBDA_EXPRESSION")
 class AzureManagedIdentityConfigurationPanel(private val project: Project) : AzureRiderAbstractConfigurablePanel {
 
     private val logger = Logger.getInstance(AzureRiderAbstractConfigurablePanel::class.java)
 
-    private fun createPanel(): DialogPanel =
-            panel {
-                noteRow(RiderAzureBundle.message("settings.managedidentity.description"))
-                row {
-                    link(RiderAzureBundle.message("settings.managedidentity.info.title")) {
-                        BrowserUtil.open(RiderAzureBundle.message("settings.managedidentity.info.url"))
+    private fun createPanel(): DialogPanel {
+        lateinit var dialogPanel: DialogPanel
+        dialogPanel = panel {
+            noteRow(RiderAzureBundle.message("settings.managedidentity.description"))
+            row {
+                link(RiderAzureBundle.message("settings.managedidentity.info.title")) {
+                    BrowserUtil.open(RiderAzureBundle.message("settings.managedidentity.info.url"))
+                }
+            }
+
+            row {
+                cell {
+                    lateinit var signInButtonCell: CellBuilder<JButton>
+                    signInButtonCell = button(RiderAzureBundle.message("settings.managedidentity.sign_in_with_cli")) {
+                        try {
+                            AuthMethodManager.getInstance().signOut()
+                            if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+                                dialogPanel.reset()
+                            }
+                        } catch (e: Exception) {
+                            logger.error("Error while signing in with Azure CLI", e)
+                        }
                     }
+                    signInButtonCell.onReset { signInButtonCell.enabled(!isSignedInWithAzureCli()) }
                 }
 
-                val rowConfiguredCorrectly = row {
+                cell {
+                    lateinit var signOutButtonCell: CellBuilder<JButton>
+                    signOutButtonCell = button(RiderAzureBundle.message("settings.managedidentity.sign_out")) {
+                        try {
+                            AuthMethodManager.getInstance().signOut()
+                            dialogPanel.reset()
+                        } catch (e: Exception) {
+                            logger.error("Error while signing out", e)
+                        }
+                    }
+                    signOutButtonCell.onReset { signOutButtonCell.component.isVisible = isSignedIn() }
+                }
+            }
+
+            // Shown when not signed in with Azure Cli
+            lateinit var rowNotSignedInWithAzureCli: Row
+            rowNotSignedInWithAzureCli = row {
+                label(RiderAzureBundle.message("settings.managedidentity.not_signed_in_with_cli")).apply {
+                    component.icon = AllIcons.General.Warning
+                }
+            }.onGlobalReset { rowNotSignedInWithAzureCli.visible = !isSignedInWithAzureCli() }
+
+            // Shown when signed in with Azure Cli
+            lateinit var rowSignedInWithAzureCli: Row
+            lateinit var subscriptionsList: JBList<SubscriptionDetail>
+            rowSignedInWithAzureCli = row {
+                subRowIndent = 0
+
+                row {
                     label(RiderAzureBundle.message("settings.managedidentity.signed_in_with_cli")).apply {
                         component.icon = AllIcons.General.InspectionsOK
                     }
                 }
 
-                lateinit var rowRequiresSignIn: Row
-                rowRequiresSignIn = row {
-                    subRowIndent = 0
-
-                    row {
-                        button(RiderAzureBundle.message("settings.managedidentity.sign_in_with_cli")) {
-                            try {
-                                AuthMethodManager.getInstance().signOut()
-                                if (AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
-                                    rowConfiguredCorrectly.visible = true
-                                    rowRequiresSignIn.subRowsVisible = false
-                                }
-                            } catch (e: Exception) {
-                                logger.error("Error while signing in with Azure CLI", e)
-                            }
-                        }
-                    }
-
-                    row {
-                        label(RiderAzureBundle.message("settings.managedidentity.not_signed_in_with_cli")).apply {
-                            component.icon = AllIcons.General.Warning
-                        }
-                    }
+                row {
+                    label(RiderAzureBundle.message("settings.managedidentity.signed_in_with_cli.accessible_subscriptions"))
                 }
 
-                // Initial state
-                if (isSignedInWithAzureCli()) {
-                    rowConfiguredCorrectly.visible = true
-                    rowRequiresSignIn.subRowsVisible = false
-                } else {
-                    rowConfiguredCorrectly.visible = false
-                    rowRequiresSignIn.subRowsVisible = true
+                row {
+                    subscriptionsList = JBList(emptyList<SubscriptionDetail>()).apply {
+                        cellRenderer = SubscriptionDetailRenderer()
+                    }
+                    scrollPane(subscriptionsList)
+                }
+            }.onGlobalReset {
+                rowSignedInWithAzureCli.subRowsVisible = isSignedInWithAzureCli()
+                ApplicationManager.getApplication().executeOnPooledThread {
+                    val subscriptionDetails = AuthMethodManager.getInstance()
+                            ?.azureManager?.subscriptionManager?.subscriptionDetails ?: return@executeOnPooledThread
+
+                    UIUtil.invokeAndWaitIfNeeded(Runnable {
+                        if (isSignedInWithAzureCli()) {
+                            subscriptionsList.setListData(subscriptionDetails.toTypedArray())
+                        }
+                    })
                 }
             }
+
+            row {
+                placeholder().constraints(growY, pushY)
+            }
+        }
+
+        return dialogPanel
+    }
+
+    private fun isSignedIn() = try {
+        AuthMethodManager.getInstance().isSignedIn
+    } catch (e: Exception) {
+        false
+    }
 
     private fun isSignedInWithAzureCli() = try {
         val authMethodManager = AuthMethodManager.getInstance()
