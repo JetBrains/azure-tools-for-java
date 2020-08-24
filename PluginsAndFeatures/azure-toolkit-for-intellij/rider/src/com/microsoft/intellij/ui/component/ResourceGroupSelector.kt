@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2018-2020 JetBrains s.r.o.
- * <p/>
+ *
  * All rights reserved.
- * <p/>
+ *
  * MIT License
- * <p/>
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
  * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
  * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * <p/>
+ *
  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
  * the Software.
- * <p/>
+ *
  * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
  * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
@@ -36,7 +36,7 @@ import javax.swing.JPanel
 import javax.swing.JRadioButton
 import javax.swing.JTextField
 
-class AzureResourceGroupSelector(private val lifetime: Lifetime) :
+class ResourceGroupSelector(private val lifetime: Lifetime) :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
         AzureComponent {
 
@@ -52,6 +52,12 @@ class AzureResourceGroupSelector(private val lifetime: Lifetime) :
     var subscriptionId: String = ""
 
     var cachedResourceGroup: List<ResourceGroup> = emptyList()
+
+    val isCreateNew: Boolean
+        get() = rdoCreateNew.isSelected
+
+    val resourceGroupName: String
+        get() = txtResourceGroupName.text
 
     init {
         initResourceGroupComboBox()
@@ -72,8 +78,8 @@ class AzureResourceGroupSelector(private val lifetime: Lifetime) :
             return listOfNotNull(ResourceGroupValidator.checkResourceGroupIsSet(cbResourceGroup.getSelectedValue())
                     .toValidationInfo(cbResourceGroup))
 
-        return listOfNotNull(ResourceGroupValidator.validateResourceGroupName(txtResourceGroupName.text)
-                .merge(ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, txtResourceGroupName.text))
+        return listOfNotNull(ResourceGroupValidator.validateResourceGroupName(resourceGroupName)
+                .merge(ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, resourceGroupName))
                 .toValidationInfo(txtResourceGroupName))
     }
 
@@ -82,11 +88,11 @@ class AzureResourceGroupSelector(private val lifetime: Lifetime) :
                 lifetime.createNested(),
                 textChangeValidationAction = {
                     if (!isEnabled || rdoUseExisting.isSelected) return@initValidationWithResult ValidationResult()
-                    ResourceGroupValidator.checkResourceGroupNameMaxLength(txtResourceGroupName.text)
-                            .merge(ResourceGroupValidator.checkInvalidCharacters(txtResourceGroupName.text)) },
+                    ResourceGroupValidator.checkResourceGroupNameMaxLength(resourceGroupName)
+                            .merge(ResourceGroupValidator.checkInvalidCharacters(resourceGroupName)) },
                 focusLostValidationAction = {
                     if (!isEnabled || rdoUseExisting.isSelected) return@initValidationWithResult ValidationResult()
-                    ResourceGroupValidator.checkEndsWithPeriod(txtResourceGroupName.text) })
+                    ResourceGroupValidator.checkEndsWithPeriod(resourceGroupName) })
     }
 
     fun fillResourceGroupComboBox(resourceGroups: List<ResourceGroup>, defaultComparator: (ResourceGroup) -> Boolean = { false }) {

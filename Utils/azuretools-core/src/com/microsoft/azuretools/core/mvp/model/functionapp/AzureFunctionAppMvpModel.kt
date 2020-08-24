@@ -204,7 +204,7 @@ object AzureFunctionAppMvpModel {
             return checkConnectionStringNameExists(app, connectionStringName, force)
         }
 
-        val app = AzureFunctionAppMvpModel.getFunctionAppById(subscriptionId, appId)
+        val app = getFunctionAppById(subscriptionId, appId)
         return checkConnectionStringNameExists(app, connectionStringName, force)
     }
 
