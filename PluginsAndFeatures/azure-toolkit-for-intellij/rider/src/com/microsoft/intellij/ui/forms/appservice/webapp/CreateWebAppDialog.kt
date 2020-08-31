@@ -40,6 +40,8 @@ import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
+import com.microsoft.intellij.helpers.defaults.AzureDefaults
+import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
 import com.microsoft.intellij.helpers.validator.WebAppValidator
 import com.microsoft.intellij.runner.webapp.AzureDotNetWebAppMvpModel
 import com.microsoft.intellij.runner.webapp.config.ui.WebAppCreateNewComponent
@@ -119,8 +121,8 @@ class CreateWebAppDialog(private val lifetimeDef: LifetimeDefinition,
                         isCreatingAppServicePlan = pnlCreate.pnlAppServicePlan.isCreatingNew,
                         appServicePlanId         = pnlCreate.pnlAppServicePlan.lastSelectedAppServicePlan?.id(),
                         appServicePlanName       = pnlCreate.pnlAppServicePlan.servicePlanName,
-                        pricingTier              = pnlCreate.pnlAppServicePlan.cbPricingTier.getSelectedValue(),
-                        location                 = pnlCreate.pnlAppServicePlan.cbLocation.getSelectedValue()?.region(),
+                        pricingTier              = pnlCreate.pnlAppServicePlan.cbPricingTier.getSelectedValue() ?: AzureDefaults.pricingTier,
+                        location                 = pnlCreate.pnlAppServicePlan.location ?: AzureDefaults.location,
                         netFrameworkVersion      = null,
                         netCoreRuntime           = null
                 )
@@ -164,7 +166,12 @@ class CreateWebAppDialog(private val lifetimeDef: LifetimeDefinition,
                             WebAppValidator
                                     .validateWebAppName(pnlCreate.pnlAppName.appName)
                                     .merge(WebAppValidator.checkWebAppExists(pnlCreate.pnlAppName.appName))
-                                    .toValidationInfo(pnlCreate.pnlAppName.txtAppName)
+                                    .toValidationInfo(pnlCreate.pnlAppName.txtAppName),
+
+                            ResourceGroupValidator.checkResourceGroupNameExists(
+                                    subscriptionId = pnlCreate.pnlSubscription.lastSelectedSubscriptionId,
+                                    name = pnlCreate.pnlResourceGroup.resourceGroupName
+                            ).toValidationInfo(pnlCreate.pnlResourceGroup.txtResourceGroupName)
                     )
 
     override fun dispose() {
@@ -198,8 +205,6 @@ class CreateWebAppDialog(private val lifetimeDef: LifetimeDefinition,
             presenter.onLoadResourceGroups(lifetimeDef, subscriptionId)
             presenter.onLoadAppServicePlan(lifetimeDef, subscriptionId)
             presenter.onLoadLocation(lifetimeDef, subscriptionId)
-
-            pnlCreate.pnlResourceGroup.subscriptionId = subscriptionId
         }
     }
 

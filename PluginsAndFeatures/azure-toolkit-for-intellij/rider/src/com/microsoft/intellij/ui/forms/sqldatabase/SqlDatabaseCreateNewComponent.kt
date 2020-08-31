@@ -112,7 +112,6 @@ class SqlDatabaseCreateNewComponent(private val lifetime: Lifetime, private val 
             add(txtDatabaseCollation, "growx")
         }
 
-        // TODO: Check this
         add(pnlName, "growx")
         add(pnlSubscription, "growx")
         add(pnlResourceGroup, "growx")

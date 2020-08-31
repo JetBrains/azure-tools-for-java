@@ -26,6 +26,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.util.ui.update.Activatable
 import com.intellij.util.ui.update.UiNotifyConnector
 import com.jetbrains.rd.platform.util.application
@@ -41,6 +42,7 @@ import com.microsoft.azuretools.utils.AzureModelController
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import com.microsoft.intellij.helpers.validator.LocationValidator
+import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
 import com.microsoft.intellij.helpers.validator.SqlServerValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import com.microsoft.intellij.ui.extension.getSelectedValue
@@ -91,19 +93,32 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
 
     override fun createCenterPanel(): JComponent = panel
 
-    override fun validateComponent() =
-            pnlCreate.pnlSubscription.validateComponent() +
-            pnlCreate.pnlResourceGroup.validateComponent() +
-            listOfNotNull(
-                    SqlServerValidator
-                            .validateSqlServerName(pnlCreate.serverName)
-                            .merge(SqlServerValidator.checkSqlServerExistence(pnlCreate.pnlSubscription.lastSelectedSubscriptionId, pnlCreate.serverName))
-                            .toValidationInfo(pnlCreate.pnlName.txtNameValue),
-                    LocationValidator.checkLocationIsSet(pnlCreate.cbLocation.getSelectedValue()).toValidationInfo(pnlCreate.cbLocation),
-                    SqlServerValidator.validateAdminLogin(pnlCreate.txtAdminLoginValue.text).toValidationInfo(pnlCreate.txtAdminLoginValue),
-                    SqlServerValidator.validateAdminPassword(pnlCreate.txtAdminLoginValue.text, pnlCreate.passAdminPassword.password).toValidationInfo(pnlCreate.passAdminPassword),
-                    SqlServerValidator.checkPasswordsMatch(pnlCreate.passAdminPassword.password, pnlCreate.passAdminPasswordConfirm.password).toValidationInfo(pnlCreate.passAdminPasswordConfirm)
-            )
+    override fun validateComponent(): List<ValidationInfo> {
+        val subscriptionId = pnlCreate.pnlSubscription.lastSelectedSubscriptionId
+        return pnlCreate.pnlSubscription.validateComponent() +
+                pnlCreate.pnlResourceGroup.validateComponent() +
+                listOfNotNull(
+                        SqlServerValidator
+                                .validateSqlServerName(pnlCreate.serverName)
+                                .merge(SqlServerValidator.checkSqlServerExistence(subscriptionId, pnlCreate.serverName))
+                                .toValidationInfo(pnlCreate.pnlName.txtNameValue),
+
+                        ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, pnlCreate.pnlResourceGroup.resourceGroupName)
+                                .toValidationInfo(pnlCreate.pnlResourceGroup.txtResourceGroupName),
+
+                        LocationValidator.checkLocationIsSet(pnlCreate.cbLocation.getSelectedValue())
+                                .toValidationInfo(pnlCreate.cbLocation),
+
+                        SqlServerValidator.validateAdminLogin(pnlCreate.txtAdminLoginValue.text)
+                                .toValidationInfo(pnlCreate.txtAdminLoginValue),
+
+                        SqlServerValidator.validateAdminPassword(pnlCreate.txtAdminLoginValue.text, pnlCreate.passAdminPassword.password)
+                                .toValidationInfo(pnlCreate.passAdminPassword),
+
+                        SqlServerValidator.checkPasswordsMatch(pnlCreate.passAdminPassword.password, pnlCreate.passAdminPasswordConfirm.password)
+                                .toValidationInfo(pnlCreate.passAdminPasswordConfirm)
+                )
+    }
 
     override fun initComponentValidation() {
 
@@ -210,8 +225,6 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
             val subscriptionId = subscription.subscriptionId()
             presenter.onLoadResourceGroups(lifetimeDef, subscriptionId)
             presenter.onLoadLocation(lifetimeDef, subscriptionId)
-
-            pnlCreate.pnlResourceGroup.subscriptionId = subscriptionId
         }
     }
 

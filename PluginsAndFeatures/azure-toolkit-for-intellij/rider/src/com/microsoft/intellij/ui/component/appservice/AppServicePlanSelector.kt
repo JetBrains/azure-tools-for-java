@@ -80,6 +80,12 @@ class AppServicePlanSelector(private val lifetime: Lifetime) :
     val servicePlanName: String
         get() = txtName.text
 
+    val pricingTier: PricingTier?
+        get() = cbPricingTier.getSelectedValue()
+
+    val location: Region?
+        get() = cbLocation.getSelectedValue()?.region()
+
     init {
         initAppServicePlanComboBox()
         initLocationComboBox()

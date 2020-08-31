@@ -26,6 +26,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.util.ui.update.Activatable
 import com.intellij.util.ui.update.UiNotifyConnector
 import com.jetbrains.rd.platform.util.application
@@ -39,11 +40,14 @@ import com.microsoft.azure.management.resources.Subscription
 import com.microsoft.azure.management.storage.StorageAccount
 import com.microsoft.azure.management.storage.StorageAccountSkuType
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
+import com.microsoft.azuretools.core.mvp.model.storage.AzureStorageAccountMvpModel
 import com.microsoft.azuretools.ijidea.utility.UpdateProgressIndicator
 import com.microsoft.azuretools.utils.AzureModelController
 import com.microsoft.intellij.deploy.AzureDeploymentProgressNotification
 import com.microsoft.intellij.helpers.defaults.AzureDefaults
 import com.microsoft.intellij.helpers.validator.FunctionAppValidator
+import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
+import com.microsoft.intellij.helpers.validator.StorageAccountValidator
 import com.microsoft.intellij.runner.functionapp.config.ui.FunctionAppCreateNewComponent
 import com.microsoft.intellij.runner.functionapp.model.FunctionAppPublishModel
 import com.microsoft.intellij.ui.extension.getSelectedValue
@@ -155,17 +159,23 @@ class CreateFunctionAppDialog(private val lifetimeDef: LifetimeDefinition,
         super.doOKAction()
     }
 
-    override fun validateComponent() =
-            pnlCreate.pnlSubscription.validateComponent() +
-                    pnlCreate.pnlResourceGroup.validateComponent() +
-                    pnlCreate.pnlHostingPlan.validateComponent() +
-                    pnlCreate.pnlStorageAccount.validateComponent() +
-                    listOfNotNull(
-                            FunctionAppValidator.validateFunctionAppName(
-                                    subscriptionId = pnlCreate.pnlSubscription.lastSelectedSubscriptionId,
-                                    name = pnlCreate.pnlAppName.appName
-                            ).toValidationInfo(pnlCreate.pnlAppName.txtAppName)
-                    )
+    override fun validateComponent(): List<ValidationInfo> {
+        val subscriptionId = pnlCreate.pnlSubscription.lastSelectedSubscriptionId
+        return pnlCreate.pnlSubscription.validateComponent() +
+                pnlCreate.pnlResourceGroup.validateComponent() +
+                pnlCreate.pnlHostingPlan.validateComponent() +
+                pnlCreate.pnlStorageAccount.validateComponent() +
+                listOfNotNull(
+                        FunctionAppValidator.validateFunctionAppName(subscriptionId, pnlCreate.pnlAppName.appName)
+                                .toValidationInfo(pnlCreate.pnlAppName.txtAppName),
+
+                        ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, pnlCreate.pnlResourceGroup.resourceGroupName)
+                                .toValidationInfo(pnlCreate.pnlResourceGroup.txtResourceGroupName),
+
+                        StorageAccountValidator.checkStorageAccountNameExists(subscriptionId, pnlCreate.pnlStorageAccount.storageAccountName)
+                                .toValidationInfo(pnlCreate.pnlStorageAccount.txtName)
+                )
+    }
 
     override fun dispose() {
         presenter.onDetachView()
@@ -194,6 +204,7 @@ class CreateFunctionAppDialog(private val lifetimeDef: LifetimeDefinition,
                 indicator.isIndeterminate = true
                 AzureModelController.updateSubscriptionMaps(UpdateProgressIndicator(indicator))
                 AzureFunctionAppMvpModel.refreshSubscriptionToFunctionAppMap()
+                AzureStorageAccountMvpModel.refreshStorageAccountsMap()
             }
         })
     }
@@ -205,8 +216,6 @@ class CreateFunctionAppDialog(private val lifetimeDef: LifetimeDefinition,
             presenter.onLoadAppServicePlan(lifetimeDef, subscriptionId)
             presenter.onLoadLocation(lifetimeDef, subscriptionId)
             presenter.onLoadStorageAccounts(lifetime, subscriptionId)
-
-            pnlCreate.pnlResourceGroup.subscriptionId = subscriptionId
         }
     }
 

@@ -26,7 +26,11 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ValidationInfo
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.microsoft.azure.management.resources.ResourceGroup
-import com.microsoft.intellij.ui.extension.*
+import com.microsoft.intellij.ui.extension.fillComboBox
+import com.microsoft.intellij.ui.extension.getSelectedValue
+import com.microsoft.intellij.ui.extension.initValidationWithResult
+import com.microsoft.intellij.ui.extension.setComponentsEnabled
+import com.microsoft.intellij.ui.extension.setDefaultRenderer
 import com.microsoft.intellij.helpers.validator.ResourceGroupValidator
 import com.microsoft.intellij.helpers.validator.ValidationResult
 import net.miginfocom.swing.MigLayout
@@ -48,8 +52,6 @@ class ResourceGroupSelector(private val lifetime: Lifetime) :
 
     var lastSelectedResourceGroup: ResourceGroup? = null
     var listenerAction: () -> Unit = {}
-
-    var subscriptionId: String = ""
 
     var cachedResourceGroup: List<ResourceGroup> = emptyList()
 
@@ -79,7 +81,6 @@ class ResourceGroupSelector(private val lifetime: Lifetime) :
                     .toValidationInfo(cbResourceGroup))
 
         return listOfNotNull(ResourceGroupValidator.validateResourceGroupName(resourceGroupName)
-                .merge(ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, resourceGroupName))
                 .toValidationInfo(txtResourceGroupName))
     }
 

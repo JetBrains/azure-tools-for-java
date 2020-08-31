@@ -51,8 +51,6 @@ class StorageAccountSelector(private val lifetime: Lifetime) :
         private val indentionSize = JBUI.scale(17)
     }
 
-    var subscriptionId: String = ""
-
     val rdoUseExisting = JRadioButton(message("run_config.publish.form.storage_account.use_existing"), true)
     val cbStorageAccount = ComboBox<StorageAccount>()
 
@@ -98,8 +96,7 @@ class StorageAccountSelector(private val lifetime: Lifetime) :
         }
 
         return listOfNotNull(
-                StorageAccountValidator.validateStorageAccountName(subscriptionId, txtName.text)
-                        .toValidationInfo(txtName))
+                StorageAccountValidator.validateStorageAccountName(txtName.text).toValidationInfo(txtName))
     }
 
     override fun initComponentValidation() {
