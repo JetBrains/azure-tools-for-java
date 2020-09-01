@@ -115,8 +115,8 @@ class CreateFunctionAppDialog(private val lifetimeDef: LifetimeDefinition,
 
             override fun run(progress: ProgressIndicator) {
                 val app = AzureFunctionAppMvpModel.createFunctionApp(
-                        subscriptionId = subscriptionId,
-                        appName = appName,
+                        subscriptionId         = subscriptionId,
+                        appName                = appName,
                         isCreateResourceGroup  = pnlCreate.pnlResourceGroup.isCreateNew,
                         resourceGroupName      = resourceGroupName,
                         isCreateAppServicePlan = pnlCreate.pnlHostingPlan.isCreatingNew,
@@ -167,13 +167,19 @@ class CreateFunctionAppDialog(private val lifetimeDef: LifetimeDefinition,
                 pnlCreate.pnlStorageAccount.validateComponent() +
                 listOfNotNull(
                         FunctionAppValidator.validateFunctionAppName(subscriptionId, pnlCreate.pnlAppName.appName)
-                                .toValidationInfo(pnlCreate.pnlAppName.txtAppName),
-
-                        ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, pnlCreate.pnlResourceGroup.resourceGroupName)
-                                .toValidationInfo(pnlCreate.pnlResourceGroup.txtResourceGroupName),
-
-                        StorageAccountValidator.checkStorageAccountNameExists(subscriptionId, pnlCreate.pnlStorageAccount.storageAccountName)
-                                .toValidationInfo(pnlCreate.pnlStorageAccount.txtName)
+                                .toValidationInfo(pnlCreate.pnlAppName.txtAppName)
+                ) +
+                listOfNotNull(
+                        if (pnlCreate.pnlResourceGroup.isCreateNew) {
+                            ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, pnlCreate.pnlResourceGroup.resourceGroupName)
+                                    .toValidationInfo(pnlCreate.pnlResourceGroup.txtResourceGroupName)
+                        } else null
+                ) +
+                listOfNotNull(
+                        if (pnlCreate.pnlStorageAccount.isCreatingNew) {
+                            StorageAccountValidator.checkStorageAccountNameExists(subscriptionId, pnlCreate.pnlStorageAccount.storageAccountName)
+                                    .toValidationInfo(pnlCreate.pnlStorageAccount.txtName)
+                        } else null
                 )
     }
 

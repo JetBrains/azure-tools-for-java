@@ -113,18 +113,18 @@ class CreateWebAppDialog(private val lifetimeDef: LifetimeDefinition,
 
             override fun run(progress: ProgressIndicator) {
                 val webApp = AzureDotNetWebAppMvpModel.createWebApp(
-                        subscriptionId           = subscriptionId,
-                        appName                  = appName,
-                        isCreatingResourceGroup  = pnlCreate.pnlResourceGroup.isCreateNew,
-                        resourceGroupName        = resourceGroupName,
-                        operatingSystem          = os,
+                        subscriptionId = subscriptionId,
+                        appName = appName,
+                        isCreatingResourceGroup = pnlCreate.pnlResourceGroup.isCreateNew,
+                        resourceGroupName = resourceGroupName,
+                        operatingSystem = os,
                         isCreatingAppServicePlan = pnlCreate.pnlAppServicePlan.isCreatingNew,
-                        appServicePlanId         = pnlCreate.pnlAppServicePlan.lastSelectedAppServicePlan?.id(),
-                        appServicePlanName       = pnlCreate.pnlAppServicePlan.servicePlanName,
-                        pricingTier              = pnlCreate.pnlAppServicePlan.cbPricingTier.getSelectedValue() ?: AzureDefaults.pricingTier,
-                        location                 = pnlCreate.pnlAppServicePlan.location ?: AzureDefaults.location,
-                        netFrameworkVersion      = null,
-                        netCoreRuntime           = null
+                        appServicePlanId = pnlCreate.pnlAppServicePlan.lastSelectedAppServicePlan?.id(),
+                        appServicePlanName = pnlCreate.pnlAppServicePlan.servicePlanName,
+                        pricingTier = pnlCreate.pnlAppServicePlan.cbPricingTier.getSelectedValue() ?: AzureDefaults.pricingTier,
+                        location = pnlCreate.pnlAppServicePlan.location ?: AzureDefaults.location,
+                        netFrameworkVersion = null,
+                        netCoreRuntime = null
                 )
 
                 appId = webApp.id()
@@ -166,12 +166,15 @@ class CreateWebAppDialog(private val lifetimeDef: LifetimeDefinition,
                             WebAppValidator
                                     .validateWebAppName(pnlCreate.pnlAppName.appName)
                                     .merge(WebAppValidator.checkWebAppExists(pnlCreate.pnlAppName.appName))
-                                    .toValidationInfo(pnlCreate.pnlAppName.txtAppName),
-
-                            ResourceGroupValidator.checkResourceGroupNameExists(
-                                    subscriptionId = pnlCreate.pnlSubscription.lastSelectedSubscriptionId,
-                                    name = pnlCreate.pnlResourceGroup.resourceGroupName
-                            ).toValidationInfo(pnlCreate.pnlResourceGroup.txtResourceGroupName)
+                                    .toValidationInfo(pnlCreate.pnlAppName.txtAppName)
+                    ) +
+                    listOfNotNull(
+                            if (pnlCreate.pnlResourceGroup.isCreateNew) {
+                                ResourceGroupValidator.checkResourceGroupNameExists(
+                                        subscriptionId = pnlCreate.pnlSubscription.lastSelectedSubscriptionId,
+                                        name = pnlCreate.pnlResourceGroup.resourceGroupName
+                                ).toValidationInfo(pnlCreate.pnlResourceGroup.txtResourceGroupName)
+                            } else null
                     )
 
     override fun dispose() {

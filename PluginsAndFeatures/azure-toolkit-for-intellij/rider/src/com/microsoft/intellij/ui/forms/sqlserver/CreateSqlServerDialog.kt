@@ -103,9 +103,6 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
                                 .merge(SqlServerValidator.checkSqlServerExistence(subscriptionId, pnlCreate.serverName))
                                 .toValidationInfo(pnlCreate.pnlName.txtNameValue),
 
-                        ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, pnlCreate.pnlResourceGroup.resourceGroupName)
-                                .toValidationInfo(pnlCreate.pnlResourceGroup.txtResourceGroupName),
-
                         LocationValidator.checkLocationIsSet(pnlCreate.cbLocation.getSelectedValue())
                                 .toValidationInfo(pnlCreate.cbLocation),
 
@@ -117,6 +114,12 @@ class CreateSqlServerDialog(private val lifetimeDef: LifetimeDefinition,
 
                         SqlServerValidator.checkPasswordsMatch(pnlCreate.passAdminPassword.password, pnlCreate.passAdminPasswordConfirm.password)
                                 .toValidationInfo(pnlCreate.passAdminPasswordConfirm)
+                ) +
+                listOfNotNull(
+                        if (pnlCreate.pnlResourceGroup.isCreateNew) {
+                            ResourceGroupValidator.checkResourceGroupNameExists(subscriptionId, pnlCreate.pnlResourceGroup.resourceGroupName)
+                                    .toValidationInfo(pnlCreate.pnlResourceGroup.txtResourceGroupName)
+                        } else null
                 )
     }
 
