@@ -37,6 +37,7 @@ import com.microsoft.azuretools.authmanage.AuthMethodManager
 import com.microsoft.azuretools.authmanage.models.SubscriptionDetail
 import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.intellij.configuration.ui.AzureRiderAbstractConfigurablePanel
+import net.miginfocom.swing.MigLayout
 import org.jetbrains.plugins.azure.RiderAzureBundle
 import java.io.IOException
 
@@ -142,7 +143,7 @@ class AzureManagedIdentityConfigurationPanel(private val project: Project) : Azu
                 placeholder().constraints(growY, pushY)
             }
         }
-
+        dialogPanel.layout = MigLayout("novisualpadding, ins 0, fillx, wrap 1, hidemode 3")
         return dialogPanel
     }
 
