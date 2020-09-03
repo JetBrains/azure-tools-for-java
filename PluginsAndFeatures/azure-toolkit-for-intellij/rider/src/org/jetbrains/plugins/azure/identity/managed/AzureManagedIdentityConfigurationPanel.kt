@@ -30,6 +30,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.layout.Row
+import com.intellij.ui.layout.applyToComponent
 import com.intellij.ui.layout.panel
 import com.intellij.util.ui.UIUtil
 import com.microsoft.azuretools.authmanage.AuthMethod
@@ -91,8 +92,8 @@ class AzureManagedIdentityConfigurationPanel(private val project: Project) : Azu
             // Shown when not signed in with Azure Cli
             lateinit var rowNotSignedInWithAzureCli: Row
             rowNotSignedInWithAzureCli = row {
-                label(RiderAzureBundle.message("settings.managedidentity.not_signed_in_with_cli")).apply {
-                    component.icon = AllIcons.General.Warning
+                label(RiderAzureBundle.message("settings.managedidentity.not_signed_in_with_cli")).applyToComponent {
+                    icon = AllIcons.General.Warning
                 }
             }.onGlobalReset { rowNotSignedInWithAzureCli.visible = !isSignedInWithAzureCli() }
 
@@ -103,9 +104,13 @@ class AzureManagedIdentityConfigurationPanel(private val project: Project) : Azu
                 subRowIndent = 0
 
                 row {
-                    label(RiderAzureBundle.message("settings.managedidentity.signed_in_with_cli")).apply {
-                        component.icon = AllIcons.General.InspectionsOK
+                    label(RiderAzureBundle.message("settings.managedidentity.signed_in_with_cli")).applyToComponent {
+                        icon = AllIcons.General.InspectionsOK
                     }
+                }
+
+                row {
+                    placeholder()
                 }
 
                 row {
