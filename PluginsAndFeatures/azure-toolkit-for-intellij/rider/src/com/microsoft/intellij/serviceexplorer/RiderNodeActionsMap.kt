@@ -35,6 +35,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functio
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.AzureDatabaseModule
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqldatabase.SqlDatabaseNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
+import com.microsoft.tooling.msservices.serviceexplorer.azure.storage.StorageNode
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppModule
 import com.microsoft.tooling.msservices.serviceexplorer.azure.webapp.WebAppNode
 import java.util.*
@@ -83,6 +84,11 @@ class RiderNodeActionsMap : NodeActionsMap() {
                     .add(StartStreamingLogsAction::class.java)
                     .add(StopStreamingLogsAction::class.java)
                     .build()
+
+            node2Actions[StorageNode::class.java] = ImmutableList.Builder<Class<out NodeActionListener>>()
+                    .add(AddRbacRoleAction::class.java)
+                    .build()
         }
     }
 }
+
