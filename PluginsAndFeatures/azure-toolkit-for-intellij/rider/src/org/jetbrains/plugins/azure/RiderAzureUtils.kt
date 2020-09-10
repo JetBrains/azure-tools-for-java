@@ -22,6 +22,13 @@
 
 package org.jetbrains.plugins.azure
 
+import com.microsoft.azure.AzureEnvironment
+import com.microsoft.azuretools.core.mvp.model.functionapp.functions.rest.getRetrofitClient
+import com.microsoft.azuretools.sdkmanage.AzureManager
+import com.microsoft.rest.credentials.TokenCredentials
+import retrofit2.Call
+import retrofit2.http.GET
+import retrofit2.http.Headers
 import java.net.URI
 import java.util.*
 
@@ -52,3 +59,31 @@ fun String?.isValidGuid(): Boolean {
         false
     }
 }
+
+
+// Get current user details
+fun AzureManager.currentAzureUser(tokenCredentials: TokenCredentials): Me? {
+    val retrofitClient = this.getRetrofitClient(
+            this.environment.azureEnvironment,
+            AzureEnvironment.Endpoint.GRAPH,
+            MeService::class.java,
+            tokenCredentials)
+
+    val meResponse = retrofitClient.me().execute()
+    if (meResponse.isSuccessful) {
+        return meResponse.body()
+    }
+    return null
+}
+
+interface MeService {
+    @GET("me?api-version=1.6")
+    @Headers("Accept: application/json")
+    fun me(): Call<Me>
+}
+
+class Me (
+        val objectId : String?,
+        val objectType : String?,
+        val accountEnabled : Boolean?
+)
