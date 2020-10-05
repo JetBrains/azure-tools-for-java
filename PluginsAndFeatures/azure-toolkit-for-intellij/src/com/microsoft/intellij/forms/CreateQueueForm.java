@@ -59,7 +59,6 @@ public class CreateQueueForm extends AzureDialogWrapper {
         super(project, true);
 
         this.project = project;
-        setModal(true);
 
         setTitle("Create Queue");
         namingGuidelinesLink.addMouseListener(new LinkListener("https://go.microsoft.com/fwlink/?LinkId=255557"));
@@ -82,6 +81,11 @@ public class CreateQueueForm extends AzureDialogWrapper {
         });
 
         init();
+    }
+
+    @Override
+    public @Nullable JComponent getPreferredFocusedComponent() {
+        return nameTextField;
     }
 
     private void changedName() {
