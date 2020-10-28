@@ -45,10 +45,10 @@ class AzureFunctionsHostRunConfigurationProducer
             configuration: AzureFunctionsHostConfiguration,
             context: ConfigurationContext
     ) : Boolean {
-        val project = context.getSelectedProject() ?: return false
+        val selectedProject = context.getSelectedProject() ?: return false
         val projects = context.project.solution.runnableProjectsModel.projects.valueOrNull ?: return false
 
-        val selectedProjectFilePath = FileUtil.toSystemIndependentName(project.getFile()?.path ?: "")
+        val selectedProjectFilePath = FileUtil.toSystemIndependentName(selectedProject.getFile()?.path ?: "")
         val runnableProject = projects.firstOrNull {
             it.kind == RunnableProjectKind.AzureFunctions &&
             it.projectFilePath == selectedProjectFilePath &&
@@ -63,10 +63,10 @@ class AzureFunctionsHostRunConfigurationProducer
             context: ConfigurationContext,
             ref: Ref<PsiElement>
     ): Boolean {
-        val project = context.getSelectedProject() ?: return false
+        val selectedProject = context.getSelectedProject() ?: return false
         val projects = context.project.solution.runnableProjectsModel.projects.valueOrNull ?: return false
 
-        val selectedProjectFilePath = FileUtil.toSystemIndependentName(project.getFile()?.path ?: "")
+        val selectedProjectFilePath = FileUtil.toSystemIndependentName(selectedProject.getFile()?.path ?: "")
         val runnableProject = projects.firstOrNull {
             it.kind == RunnableProjectKind.AzureFunctions &&
             it.projectFilePath == selectedProjectFilePath
