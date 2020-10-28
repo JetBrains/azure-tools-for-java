@@ -189,6 +189,7 @@
 
     <stepsBeforeRunProvider implementation="org.jetbrains.plugins.azure.functions.buildTasks.BuildFunctionsProjectBeforeRunTaskProvider"/>
     <configurationType implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostConfigurationType"/>
+    <runConfigurationProducer implementation="org.jetbrains.plugins.azure.functions.run.AzureFunctionsHostRunConfigurationProducer"/>
 
     <postStartupActivity implementation="com.microsoft.intellij.AzureRiderPlugin" />
     <postStartupActivity implementation="org.jetbrains.plugins.azure.functions.AzureCoreToolsDetector" />
