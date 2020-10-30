@@ -70,7 +70,7 @@ class AzureFunctionsHostRunConfigurationProducer
         val runnableProject = projects.firstOrNull {
             it.kind == RunnableProjectKind.AzureFunctions &&
             it.projectFilePath == selectedProjectFilePath
-        }
+        } ?: return false
 
         configuration.parameters.apply {
             projectFilePath = selectedProjectFilePath
