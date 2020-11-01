@@ -45,10 +45,9 @@ class AzureFunctionsHostRunConfigurationProducer
             configuration: AzureFunctionsHostConfiguration,
             context: ConfigurationContext
     ) : Boolean {
-        val selectedProject = context.getSelectedProject() ?: return false
-        val projects = context.project.solution.runnableProjectsModel.projects.valueOrNull ?: return false
+        val selectedProjectFilePath = context.getSelectedProject()?.getFile()?.path  ?: return false
 
-        val selectedProjectFilePath = FileUtil.toSystemIndependentName(selectedProject.getFile()?.path ?: "")
+        val projects = context.project.solution.runnableProjectsModel.projects.valueOrNull ?: return false
         val runnableProject = projects.firstOrNull {
             it.kind == RunnableProjectKind.AzureFunctions &&
             it.projectFilePath == selectedProjectFilePath &&
@@ -63,10 +62,9 @@ class AzureFunctionsHostRunConfigurationProducer
             context: ConfigurationContext,
             ref: Ref<PsiElement>
     ): Boolean {
-        val selectedProject = context.getSelectedProject() ?: return false
-        val projects = context.project.solution.runnableProjectsModel.projects.valueOrNull ?: return false
+        val selectedProjectFilePath = context.getSelectedProject()?.getFile()?.path  ?: return false
 
-        val selectedProjectFilePath = FileUtil.toSystemIndependentName(selectedProject.getFile()?.path ?: "")
+        val projects = context.project.solution.runnableProjectsModel.projects.valueOrNull ?: return false
         val runnableProject = projects.firstOrNull {
             it.kind == RunnableProjectKind.AzureFunctions &&
             it.projectFilePath == selectedProjectFilePath
@@ -74,10 +72,7 @@ class AzureFunctionsHostRunConfigurationProducer
 
         configuration.parameters.apply {
             projectFilePath = selectedProjectFilePath
-
-            runnableProject?.let {
-                projectTfm = it.projectOutputs.firstOrNull()?.tfm ?: projectTfm
-            }
+            projectTfm = runnableProject.projectOutputs.firstOrNull()?.tfm ?: projectTfm
         }
 
         return true
