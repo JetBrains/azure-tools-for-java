@@ -20,25 +20,23 @@
  * SOFTWARE.
  */
 
-package org.jetbrains.mock
+package com.microsoft.intellij.ui.forms.appservice.functionapp.slot
 
-import com.microsoft.azure.management.appservice.ConnectionString
-import com.microsoft.azure.management.appservice.ConnectionStringType
+import com.microsoft.azure.management.appservice.FunctionApp
+import com.microsoft.azure.management.appservice.FunctionDeploymentSlot
+import com.microsoft.intellij.ui.forms.appservice.slot.DoNotCloneSettingsDeploymentSlotBase
+import rx.Observable
 
-class ConnectionStringMock(
-        private val name: String = "testDbConnection",
-        private val value: String = "test; connection; string; value"
-) : ConnectionString {
+/**
+ * This class is used to include the "Do not clone settings" item into a DeploymentSlot ComboBox.
+ * This is just a fake Deployment Slot with the purpose of displaying an extra option in the ComboBox.
+ *
+ * The only API that we use here is name(). Other are just placeholders.
+ */
+class DoNotCloneSettingsFunctionDeploymentSlot : DoNotCloneSettingsDeploymentSlotBase<FunctionDeploymentSlot>(), FunctionDeploymentSlot {
+    override fun refresh(): FunctionDeploymentSlot { TODO("Not yet implemented") }
 
-    override fun sticky(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun refreshAsync(): Observable<FunctionDeploymentSlot> { TODO("Not yet implemented") }
 
-    override fun value(): String = value
-
-    override fun type(): ConnectionStringType {
-        TODO("Not yet implemented")
-    }
-
-    override fun name(): String = name
+    override fun parent(): FunctionApp { TODO("Not yet implemented") }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2020 JetBrains s.r.o.
+ * Copyright (c) 2020 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -20,31 +20,45 @@
  * SOFTWARE.
  */
 
-package com.microsoft.intellij.serviceexplorer.azure.database.actions
+package com.microsoft.intellij.serviceexplorer.azure.functionapp.actions
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.rd.defineNestedLifetime
-import com.microsoft.azuretools.core.mvp.model.database.AzureSqlServerMvpModel
-import com.microsoft.intellij.ui.forms.sqldatabase.CreateSqlDatabaseOnServerDialog
+import com.microsoft.azuretools.authmanage.AuthMethodManager
+import com.microsoft.azuretools.ijidea.actions.AzureSignInAction
 import com.microsoft.tooling.msservices.helpers.Name
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
-import com.microsoft.tooling.msservices.serviceexplorer.azure.database.sqlserver.SqlServerNode
+import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode
 
-@Name("New SQL Database")
-class SqlDatabaseCreateAction(private val sqlServerNode: SqlServerNode) : NodeActionListener() {
+@Name("New Deployment Slot")
+class FunctionAppCreateDeploymentSlotAction(private val appNode: FunctionAppNode) : NodeActionListener() {
+
+    companion object {
+        private val logger = Logger.getInstance(FunctionAppCreateDeploymentSlotAction::class.java)
+    }
 
     override fun actionPerformed(event: NodeActionEvent?) {
-        event ?: return
+        val project = appNode.project as? Project
+        if (project == null) {
+            logger.error("Project instance is not defined for module '${appNode.name}'")
+            return
+        }
 
-        val project = sqlServerNode.project as? Project ?: return
+        if (!AzureSignInAction.doSignIn(AuthMethodManager.getInstance(), project)) {
+            logger.error("Failed to create Deployment Slot. User is not signed in.")
+            return
+        }
 
-        // TODO: This need to be fixed! We must not block UI thread when making a curl request
-        //  Need to be executed on a background thread or any other way (move inside dialog for example)
-        val sqlServer = AzureSqlServerMvpModel.getSqlServerById(sqlServerNode.subscriptionId, sqlServerNode.sqlServerId)
-        val createSqlDatabaseForm =
-                CreateSqlDatabaseOnServerDialog(project.defineNestedLifetime(), project, sqlServer, Runnable { sqlServerNode.load(true) })
-        createSqlDatabaseForm.show()
+        // TODO: Fix when we store FunctionApp object in FunctionApp Node.
+//        val createSlotForm = FunctionAppCreateDeploymentSlotDialog(
+//                lifetimeDef = project.defineNestedLifetime(),
+//                project = project,
+//                app = appNode.,
+//                onCreate = { appNode.load(true) },
+//        )
+//
+//        createSlotForm.show()
     }
 
     override fun getIconPath(): String = "AddEntity.svg"
