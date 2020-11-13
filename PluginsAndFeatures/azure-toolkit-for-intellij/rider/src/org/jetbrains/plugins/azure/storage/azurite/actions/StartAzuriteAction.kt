@@ -25,6 +25,7 @@
 package org.jetbrains.plugins.azure.storage.azurite.actions
 
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.javascript.nodejs.interpreter.NodeJsInterpreterRef
@@ -33,11 +34,13 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.microsoft.intellij.configuration.AzureRiderSettings
 import org.jetbrains.plugins.azure.RiderAzureBundle
 import org.jetbrains.plugins.azure.orWhenNullOrEmpty
 import org.jetbrains.plugins.azure.storage.azurite.Azurite
 import org.jetbrains.plugins.azure.storage.azurite.AzuriteService
+import java.io.File
 
 class StartAzuriteAction
     : AnAction(
@@ -45,6 +48,7 @@ class StartAzuriteAction
         RiderAzureBundle.message("action.azurite.start.description"),
         AllIcons.Actions.Execute) {
 
+    private val logger = Logger.getInstance(StartAzuriteAction::class.java)
     private val azuriteService = service<AzuriteService>()
 
     override fun update(e: AnActionEvent) {
@@ -108,6 +112,15 @@ class StartAzuriteAction
                     "--location",
                     azuriteWorkspaceLocation)
 
+            if (supportsTableStorage(nodeJsLocalInterpreter.interpreterSystemDependentPath, azuriteJsFile.absolutePath)) {
+                commandLine.addParameters(
+                        "--tableHost",
+                        properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_TABLE_HOST).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_TABLE_HOST_DEFAULT),
+                        "--tablePort",
+                        properties.getValue(AzureRiderSettings.PROPERTY_AZURITE_TABLE_PORT).orWhenNullOrEmpty(AzureRiderSettings.VALUE_AZURITE_TABLE_PORT_DEFAULT)
+                )
+            }
+
             if (properties.getBoolean(AzureRiderSettings.PROPERTY_AZURITE_LOOSE_MODE))
                 commandLine.addParameter("--loose")
 
@@ -135,4 +148,27 @@ class StartAzuriteAction
 
     }
 
+    private fun supportsTableStorage(nodeJsInterpreterPath: String, azuriteJsFilePath: String): Boolean {
+
+        val nodeJsInterpreterExecutable = File(nodeJsInterpreterPath)
+        val azuriteJsExecutable = File(azuriteJsFilePath)
+        if (!nodeJsInterpreterExecutable.exists() || !azuriteJsExecutable.exists())
+            return false
+
+        try {
+            val commandLine = GeneralCommandLine(
+                    nodeJsInterpreterExecutable.path,
+                    azuriteJsExecutable.path,
+                    "--help"
+            )
+
+            val processHandler = CapturingProcessHandler(commandLine)
+            val output = processHandler.runProcess(15000, true)
+            return output.stdoutLines
+                    .any { it.contains("--tableHost", true) }
+        } catch (e: Exception) {
+            logger.error("Error while determining whether Azurite version at '$azuriteJsFilePath' supports table storage", e)
+            return false
+        }
+    }
 }
