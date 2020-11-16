@@ -52,6 +52,10 @@ class StartAzuriteAction
         RiderAzureBundle.message("action.azurite.start.description"),
         AllIcons.Actions.Execute) {
 
+    companion object {
+        private const val AZURITE_PROCESS_TIMEOUT_MILLIS = 15000
+    }
+
     private val logger = Logger.getInstance(StartAzuriteAction::class.java)
     private val azuriteService = service<AzuriteService>()
 
@@ -186,8 +190,13 @@ class StartAzuriteAction
                     "--help"
             )
 
+            logger.debug("Executing ${commandLine.commandLineString}...")
+
             val processHandler = CapturingProcessHandler(commandLine)
-            val output = processHandler.runProcess(15000, true)
+            val output = processHandler.runProcess(Companion.AZURITE_PROCESS_TIMEOUT_MILLIS, true)
+
+            logger.debug("Result: ${output.stdout}")
+
             return output.stdoutLines
                     .any { it.contains("--tableHost", true) }
         } catch (e: Exception) {
