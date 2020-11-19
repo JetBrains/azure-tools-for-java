@@ -43,7 +43,17 @@ intellij {
 
     // Workaround for https://youtrack.jetbrains.com/issue/IDEA-179607
     def extraPlugins = [ "rider-plugins-appender" ]
-    plugins = ['DatabaseTools', 'JavaScriptLanguage', 'terminal', 'restClient'] + extraPlugins
+    plugins = ['DatabaseTools', 'JavaScriptLanguage', 'terminal', 'restClient', "com.jetbrains.rider.fsharp:$rider_fsharp_plugin_version"] + extraPlugins
+
+    // HACK: -- Load F# plugin from custom repository (our local disk)
+    pluginsRepo {
+        marketplace()
+
+        def url = new File("${buildDir}/dependencies").toURI().toURL().toString()
+        println(url)
+        custom(url)
+    }
+    // /--
 
     downloadSources = Boolean.valueOf(sources)
 }
