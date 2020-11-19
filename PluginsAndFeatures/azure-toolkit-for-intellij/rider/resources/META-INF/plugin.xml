@@ -176,6 +176,7 @@
   <depends>org.jetbrains.plugins.terminal</depends>
   <depends>com.jetbrains.restClient</depends>
   <depends>JavaScript</depends>
+  <depends optional="true" config-file="with-fsharp.xml">com.jetbrains.rider.fsharp</depends>
 
   <extensions defaultExtensionNs="com.intellij">
     <applicationService serviceInterface="org.jetbrains.plugins.azure.storage.azurite.AzuriteService"

@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net461</TargetFramework>
+        <RootNamespace>JetBrains.ReSharper.Azure.FSharp</RootNamespace>
+        <AssemblyName>JetBrains.ReSharper.Azure.FSharp</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Rider.SDK" Version="$(RiderSDKVersion)" />
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net461" Version="1.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Azure.Psi\Azure.Psi.csproj" />
+        <ProjectReference Include="..\Azure.Daemon\Azure.Daemon.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="FSharp.Compiler.Service, Version=2020.3.0.0, Culture=neutral, PublicKeyToken=3099b8d9d20e74bf">
+        <HintPath>..\..\..\build\dependencies\dotnet\FSharp.Compiler.Service.dll</HintPath>
+      </Reference>
+      <Reference Include="JetBrains.ReSharper.Plugins.FSharp.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=333a98252ac829ae">
+        <HintPath>..\..\..\build\dependencies\dotnet\JetBrains.ReSharper.Plugins.FSharp.Common.dll</HintPath>
+      </Reference>
+      <Reference Include="JetBrains.ReSharper.Plugins.FSharp.ProjectModelBase, Version=1.0.0.0, Culture=neutral, PublicKeyToken=333a98252ac829ae">
+        <HintPath>..\..\..\build\dependencies\dotnet\JetBrains.ReSharper.Plugins.FSharp.ProjectModelBase.dll</HintPath>
+      </Reference>
+      <Reference Include="JetBrains.ReSharper.Plugins.FSharp.Psi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=333a98252ac829ae">
+        <HintPath>..\..\..\build\dependencies\dotnet\JetBrains.ReSharper.Plugins.FSharp.Psi.dll</HintPath>
+      </Reference>
+      <Reference Include="JetBrains.ReSharper.Plugins.FSharp.Psi.Features, Version=1.0.0.0, Culture=neutral, PublicKeyToken=333a98252ac829ae">
+        <HintPath>..\..\..\build\dependencies\dotnet\JetBrains.ReSharper.Plugins.FSharp.Psi.Features.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup Label="F#">
+        <ErrorsGen Include="Errors\FunctionAppErrors.xml">
+            <Namespace>JetBrains.ReSharper.Azure.FSharp.Errors.FunctionAppErrors</Namespace>
+            <OutputFile>Errors\FunctionAppErrors.Generated.cs</OutputFile>
+            <Mode>ERRORS</Mode>
+        </ErrorsGen>
+    </ItemGroup>
+
+</Project>

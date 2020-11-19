@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Errors language="C#" configurableSeverityImplementationLanguage="CSHARP">
+<Errors language="C#" configurableSeverityImplementationLanguage="FSHARP">
 
     <Usings>
-        JetBrains.ReSharper.Azure.Daemon.Errors;
-        JetBrains.ReSharper.Azure.Daemon.FunctionApp.Stages.Analysis;
         JetBrains.ReSharper.Azure.Daemon.Highlighters;
-        JetBrains.ReSharper.Psi.CSharp;
-        JetBrains.ReSharper.Psi.CSharp.Tree;
+        JetBrains.ReSharper.Azure.FSharp.Errors;
+        JetBrains.ReSharper.Azure.FSharp.FunctionApp.Stages.Analysis;
+        JetBrains.ReSharper.Plugins.FSharp.Psi;
+        JetBrains.ReSharper.Plugins.FSharp.Psi.Tree;
     </Usings>
 
     <!-- Register the static severity groups. This is mostly used in grouping items in SWEA results.
@@ -68,9 +68,9 @@
          -->
     <Error staticGroup="AzureErrors"
            name="TimerTriggerCronExpression"
-           configurableSeverity="Azure.CSharp.FunctionApp.TimerTriggerCronExpression">
+           configurableSeverity="Azure.FSharp.FunctionApp.TimerTriggerCronExpression">
 
-        <Parameter type="ICSharpExpression" name="expression" />
+        <Parameter type="IExpression" name="expression" />
         <Parameter type="string" name="cronErrorMessage"/>
         <Message value="{0}">
             <Argument>cronErrorMessage</Argument>
