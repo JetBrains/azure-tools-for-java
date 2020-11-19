@@ -68,7 +68,7 @@ namespace JetBrains.ReSharper.Azure.FSharp.FunctionApp.Stages.Analysis
             var literal = fSharpString?.ConstantValue.Value as string;
             if (literal.IsEmpty()) return;
 
-            literal = literal.RemoveQuotes();
+            literal = literal.Trim('"');
             
             if (literal.StartsWith("%") && literal.EndsWith("%") && literal.Length > 2) return;
 

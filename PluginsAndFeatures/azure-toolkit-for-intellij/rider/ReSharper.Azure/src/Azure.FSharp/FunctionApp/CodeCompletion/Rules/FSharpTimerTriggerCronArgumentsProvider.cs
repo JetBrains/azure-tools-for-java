@@ -27,6 +27,7 @@ using JetBrains.ReSharper.Feature.Services.CodeCompletion.Infrastructure.LookupI
 using JetBrains.ReSharper.Features.Intellisense.CodeCompletion.CSharp;
 using JetBrains.ReSharper.Plugins.FSharp.Psi;
 using JetBrains.ReSharper.Plugins.FSharp.Psi.Features.CodeCompletion;
+using JetBrains.ReSharper.Plugins.FSharp.Psi.Impl;
 using JetBrains.ReSharper.Plugins.FSharp.Psi.Tree;
 using JetBrains.ReSharper.Psi;
 using JetBrains.ReSharper.Psi.Tree;
@@ -131,8 +132,7 @@ namespace JetBrains.ReSharper.Azure.FSharp.FunctionApp.CodeCompletion.Rules
             if (token == null) return false;
             
             var literalExpression = token.Parent as ILiteralExpr;
-            var parenExpression = ParenExprNavigator.GetByInnerExpression(literalExpression);
-            var attribute = AttributeNavigator.GetByExpression(parenExpression);
+            var attribute = AttributeNavigator.GetByExpression(literalExpression.IgnoreParentParens());
         
             if (attribute == null) return false;
             if (attribute.Arguments.Count != 1) return false;
