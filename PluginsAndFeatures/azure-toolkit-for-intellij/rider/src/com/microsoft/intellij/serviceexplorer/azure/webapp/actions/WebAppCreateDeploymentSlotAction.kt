@@ -63,7 +63,7 @@ class WebAppCreateDeploymentSlotAction(private val node: DeploymentSlotModule) :
                 lifetimeDef = project.defineNestedLifetime(),
                 project = project,
                 app = webAppNode.webapp,
-                onCreate = { webAppNode.load(true) })
+                onCreate = { node.load(true) })
 
         createSlotForm.show()
     }

@@ -92,7 +92,7 @@ class WebAppCreateDeploymentSlotDialog(lifetimeDef: LifetimeDefinition,
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, progressMessage, true) {
             override fun run(progress: ProgressIndicator) {
                 val cloneSettingsSource =
-                        if (pnlCreate.isCloneSettings) pnlCreate.cbExistingSettings.getSelectedValue()?.name()
+                        if (pnlCreate.isCloneSettings) pnlCreate.cbExistingSettings.getSelectedValue()
                         else null
 
                 AzureDotNetWebAppMvpModel.createDeploymentSlot(app, slotName, cloneSettingsSource)

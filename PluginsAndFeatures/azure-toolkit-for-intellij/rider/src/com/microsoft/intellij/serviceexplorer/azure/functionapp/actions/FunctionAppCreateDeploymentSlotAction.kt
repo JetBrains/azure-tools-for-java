@@ -31,6 +31,7 @@ import com.microsoft.tooling.msservices.serviceexplorer.NodeActionEvent
 import com.microsoft.tooling.msservices.serviceexplorer.NodeActionListener
 import com.microsoft.tooling.msservices.serviceexplorer.azure.appservice.functionapp.FunctionAppNode
 
+// TODO: Fix node parameter passed to the constructor. It should pass the DeploymentSlotModule node for Function App
 @Name("New Deployment Slot")
 class FunctionAppCreateDeploymentSlotAction(private val appNode: FunctionAppNode) : NodeActionListener() {
 
@@ -55,7 +56,7 @@ class FunctionAppCreateDeploymentSlotAction(private val appNode: FunctionAppNode
 //                lifetimeDef = project.defineNestedLifetime(),
 //                project = project,
 //                app = appNode.,
-//                onCreate = { appNode.load(true) },
+//                onCreate = { node.load(true) },
 //        )
 //
 //        createSlotForm.show()

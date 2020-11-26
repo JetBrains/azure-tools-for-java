@@ -22,11 +22,11 @@
 
 package com.microsoft.intellij.ui.forms.appservice.functionapp.slot
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.ui.ValidationInfo
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.Signal
 import com.microsoft.azure.management.appservice.FunctionApp
-import com.microsoft.azure.management.appservice.FunctionDeploymentSlot
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox
 import com.microsoft.azuretools.core.mvp.model.functionapp.AzureFunctionAppMvpModel
 import com.microsoft.intellij.helpers.validator.FunctionAppValidator
@@ -45,6 +45,11 @@ class FunctionAppCreateDeploymentSlotComponent(private val app: FunctionApp,
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1")),
         AzureComponent {
 
+    companion object {
+        private val logger = Logger.getInstance(FunctionAppCreateDeploymentSlotComponent::class.java)
+        private val doNotCloneSettingsName = RiderAzureBundle.message("dialog.create_deployment_slot.existing_settings.do_not_clone_settings")
+    }
+
     val pnlName = AzureResourceNameComponent()
 
     private val pnlDeploymentSlotSettings =
@@ -53,24 +58,20 @@ class FunctionAppCreateDeploymentSlotComponent(private val app: FunctionApp,
     private val lblCloneSettings =
             JLabel(RiderAzureBundle.message("dialog.create_deployment_slot.settings_clone.label"))
 
-    val cbExistingSettings = object : AzureComboBox<FunctionDeploymentSlot>() {
-
-        override fun loadItems(): List<FunctionDeploymentSlot?> {
-            val slots = AzureFunctionAppMvpModel.listDeploymentSlots(app, true)
+    val cbExistingSettings = object : AzureComboBox<String>() {
+        override fun loadItems(): List<String> {
+            val slots = AzureFunctionAppMvpModel.listDeploymentSlots(app, true).map { it.name() }
             isLoadFinishedSignal.fire(true)
 
-            return listOf(DoNotCloneSettingsFunctionDeploymentSlot()) + slots
+            return listOf(doNotCloneSettingsName, app.name()) + slots
         }
-
-        override fun getItemText(item: Any?): String =
-                (item as? FunctionDeploymentSlot)?.name() ?: super.getItemText(item)
     }
 
     val slotName: String
         get() = pnlName.txtNameValue.text
 
     val isCloneSettings: Boolean
-        get() = cbExistingSettings.getSelectedValue() !is DoNotCloneSettingsFunctionDeploymentSlot
+        get() = cbExistingSettings.getSelectedValue() != doNotCloneSettingsName
 
     init {
         pnlDeploymentSlotSettings.apply {
@@ -92,7 +93,7 @@ class FunctionAppCreateDeploymentSlotComponent(private val app: FunctionApp,
             ) +
                     listOfNotNull(
                             if (isCloneSettings)
-                                FunctionAppValidator.checkDeploymentSlotIsSet(cbExistingSettings.getSelectedValue())
+                                FunctionAppValidator.checkDeploymentSlotNameIsSet(cbExistingSettings.getSelectedValue() ?: "")
                                         .toValidationInfo(cbExistingSettings)
                             else
                                 null

@@ -22,10 +22,10 @@
 
 package com.microsoft.intellij.ui.forms.appservice.webapp.slot
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.ui.ValidationInfo
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.Signal
-import com.microsoft.azure.management.appservice.DeploymentSlot
 import com.microsoft.azure.management.appservice.WebApp
 import com.microsoft.azure.toolkit.intellij.common.AzureComboBox
 import com.microsoft.intellij.helpers.validator.WebAppValidator
@@ -34,7 +34,6 @@ import com.microsoft.intellij.ui.component.AzureComponent
 import com.microsoft.intellij.ui.component.AzureResourceNameComponent
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.extension.initValidationWithResult
-import com.microsoft.intellij.ui.forms.appservice.slot.DoNotCloneSettingsDeploymentSlotBase
 import net.miginfocom.swing.MigLayout
 import org.jetbrains.plugins.azure.RiderAzureBundle
 import javax.swing.JLabel
@@ -46,6 +45,11 @@ class WebAppCreateDeploymentSlotComponent(private val app: WebApp,
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 1")),
         AzureComponent {
 
+    companion object {
+        private val logger = Logger.getInstance(WebAppCreateDeploymentSlotComponent::class.java)
+        private val doNotCloneSettingsName = RiderAzureBundle.message("dialog.create_deployment_slot.existing_settings.do_not_clone_settings")
+    }
+
     val pnlName = AzureResourceNameComponent()
 
     private val pnlDeploymentSlotSettings =
@@ -54,24 +58,20 @@ class WebAppCreateDeploymentSlotComponent(private val app: WebApp,
     private val lblCloneSettings =
             JLabel(RiderAzureBundle.message("dialog.create_deployment_slot.settings_clone.label"))
 
-    val cbExistingSettings = object : AzureComboBox<DeploymentSlot>() {
-
-        override fun loadItems(): List<DeploymentSlot?> {
-            val slots = AzureDotNetWebAppMvpModel.listDeploymentSlots(app, true)
+    val cbExistingSettings = object : AzureComboBox<String>() {
+        override fun loadItems(): List<String> {
+            val slotNames = AzureDotNetWebAppMvpModel.listDeploymentSlots(app, true).map { it.name() }
             isLoadFinishedSignal.fire(true)
 
-            return listOf(DoNotCloneSettingsDeploymentSlot()) + slots
+            return listOf(doNotCloneSettingsName, app.name()) + slotNames
         }
-
-        override fun getItemText(item: Any?): String =
-                (item as? DeploymentSlot)?.name() ?: super.getItemText(item)
     }
 
     val slotName: String
         get() = pnlName.txtNameValue.text
 
     val isCloneSettings: Boolean
-        get() = cbExistingSettings.getSelectedValue() !is DoNotCloneSettingsDeploymentSlot
+        get() = cbExistingSettings.getSelectedValue() != doNotCloneSettingsName
 
     init {
         pnlDeploymentSlotSettings.apply {
@@ -93,7 +93,7 @@ class WebAppCreateDeploymentSlotComponent(private val app: WebApp,
             ) +
             listOfNotNull(
                     if (isCloneSettings)
-                        WebAppValidator.checkDeploymentSlotIsSet(cbExistingSettings.getSelectedValue())
+                        WebAppValidator.checkDeploymentSlotNameIsSet(cbExistingSettings.getSelectedValue() ?: "")
                                 .toValidationInfo(cbExistingSettings)
                     else
                         null
