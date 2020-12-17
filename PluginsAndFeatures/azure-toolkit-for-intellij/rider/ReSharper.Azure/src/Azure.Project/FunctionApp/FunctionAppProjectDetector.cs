@@ -18,6 +18,7 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using JetBrains.Annotations;
 using JetBrains.ProjectModel;
 using JetBrains.ProjectModel.Assemblies.Interfaces;
@@ -40,7 +41,7 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
             foreach (var tfm in project.TargetFrameworkIds)
             {
                 var configuration = project.ProjectProperties.TryGetConfiguration<IManagedProjectConfiguration>(tfm);
-                if (configuration == null || configuration.OutputType != ProjectOutputType.LIBRARY) return false;
+                if (configuration == null || (configuration.OutputType != ProjectOutputType.LIBRARY && configuration.OutputType != ProjectOutputType.CONSOLE_EXE)) return false;
 
                 if (IsAzureFunctionsProject(project, tfm, out _, null))
                 {
@@ -71,9 +72,8 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
                 .GetRequestedProjectProperties(MSBuildProjectUtil.AzureFunctionsVersion)
                 .FirstNotNull());
 
-            // 2) Check package references. If Microsoft.NET.Sdk.Functions is referenced, we're good.
-            var hasExpectedPackageReference =
-                project.GetPackagesReference(new NugetId("Microsoft.NET.Sdk.Functions"), targetFrameworkId) != null;
+            // 2) Check expected package reference.
+            var hasExpectedPackageReference = HasFunctionsPackageReference(project, targetFrameworkId);
 
             // 3) Check existence of host.json in the project
             var hasHostJsonFile = project
@@ -92,6 +92,16 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
             }
 
             return hasMsBuildProperty || hasExpectedPackageReference || hasHostJsonFile;
+        }
+        
+        private static bool HasFunctionsPackageReference(IProject project, TargetFrameworkId targetFrameworkId)
+        {
+            // .NET 5+ requires Microsoft.Azure.Functions.Worker
+            if (targetFrameworkId.Version >= new Version(5, 0))
+                return project.GetPackagesReference(new NugetId("Microsoft.Azure.Functions.Worker"), targetFrameworkId) != null;
+      
+            // Other frameworks need Microsoft.NET.Sdk.Functions
+            return project.GetPackagesReference(new NugetId("Microsoft.NET.Sdk.Functions"), targetFrameworkId) != null;
         }
     }
 }
