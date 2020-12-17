@@ -18,7 +18,6 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
 using JetBrains.Annotations;
 using JetBrains.ProjectModel;
 using JetBrains.ProjectModel.Assemblies.Interfaces;
@@ -32,6 +31,9 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
 {
     public static class FunctionAppProjectDetector
     {
+        private static readonly NugetId ExpectedPackageForNet50 = new NugetId("Microsoft.Azure.Functions.Worker");
+        private static readonly NugetId ExpectedPackageForOlder = new NugetId("Microsoft.NET.Sdk.Functions");
+        
         // TODO: Migrate [AzureFunctionsProjectDetector] from Rider to plugin codebase if possible.
         // TODO: Grabbed it from ReSharper backend to handle the issue with moved [AzureFunctionsProjectDetector] class into
         //       [JetBrains.ReSharper.Host.Features.ProjectModel.Azure] namespace. Unable to fix until EAP 8 with updated
@@ -97,11 +99,11 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
         private static bool HasFunctionsPackageReference(IProject project, TargetFrameworkId targetFrameworkId)
         {
             // .NET 5+ requires Microsoft.Azure.Functions.Worker
-            if (targetFrameworkId.Version >= new Version(5, 0))
-                return project.GetPackagesReference(new NugetId("Microsoft.Azure.Functions.Worker"), targetFrameworkId) != null;
+            if (targetFrameworkId.Version.Major >= 5)
+                return project.GetPackagesReference(ExpectedPackageForNet50, targetFrameworkId) != null;
       
             // Other frameworks need Microsoft.NET.Sdk.Functions
-            return project.GetPackagesReference(new NugetId("Microsoft.NET.Sdk.Functions"), targetFrameworkId) != null;
+            return project.GetPackagesReference(ExpectedPackageForOlder, targetFrameworkId) != null;
         }
     }
 }
