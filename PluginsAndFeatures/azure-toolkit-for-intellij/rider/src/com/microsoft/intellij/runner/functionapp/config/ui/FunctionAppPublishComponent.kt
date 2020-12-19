@@ -44,6 +44,7 @@ import com.microsoft.intellij.ui.component.ExistingOrNewSelector
 import com.microsoft.intellij.ui.component.PublishableProjectComponent
 import com.microsoft.intellij.ui.component.appservice.AppAfterPublishSettingPanel
 import com.microsoft.intellij.ui.component.appservice.FunctionAppExistingComponent
+import com.microsoft.intellij.ui.component.appservice.InitialDeploymentSlotData
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.extension.setComponentsVisible
 import net.miginfocom.swing.MigLayout
@@ -119,17 +120,8 @@ class FunctionAppPublishComponent(lifetime: Lifetime,
         else pnlCreateFunctionApp.pnlStorageAccount.rdoUseExisting.doClick()
 
         // Deployment Slots
-        val slotCheckBox = pnlExistingFunctionApp.pnlDeploymentSlotSettings.checkBoxIsEnabled
-        if (config.isDeployToSlot.xor(slotCheckBox.isSelected)) {
-            slotCheckBox.doClick()
-
-            val cbDeploymentSlots = pnlExistingFunctionApp.pnlDeploymentSlotSettings.cbDeploymentSlots
-            if (config.appId.isNotEmpty() && config.slotName.isNotEmpty() && cbDeploymentSlots.items.isNotEmpty()) {
-                val slotToSelect = cbDeploymentSlots.items.find { it.name() == config.slotName }
-                if (slotToSelect != null)
-                    cbDeploymentSlots.selectedItem = slotToSelect
-            }
-        }
+        pnlExistingFunctionApp.pnlDeploymentSlotSettings.initialData.set(
+                InitialDeploymentSlotData(config.appId, config.isDeployToSlot, config.slotName))
 
         // Settings
         val isOpenInBrowser = PropertiesComponent.getInstance().getBoolean(

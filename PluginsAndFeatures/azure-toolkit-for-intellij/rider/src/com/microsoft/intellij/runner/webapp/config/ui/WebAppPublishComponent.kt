@@ -41,6 +41,7 @@ import com.microsoft.intellij.ui.component.AzureComponent
 import com.microsoft.intellij.ui.component.ExistingOrNewSelector
 import com.microsoft.intellij.ui.component.PublishableProjectComponent
 import com.microsoft.intellij.ui.component.appservice.AppAfterPublishSettingPanel
+import com.microsoft.intellij.ui.component.appservice.InitialDeploymentSlotData
 import com.microsoft.intellij.ui.component.appservice.WebAppExistingComponent
 import com.microsoft.intellij.ui.extension.getSelectedValue
 import com.microsoft.intellij.ui.extension.setComponentsVisible
@@ -115,17 +116,8 @@ class WebAppPublishComponent(lifetime: Lifetime,
         else pnlCreateWebApp.pnlOperatingSystem.rdoOperatingSystemLinux.doClick()
 
         // Deployment Slot
-        val slotCheckBox = pnlExistingWebApp.pnlDeploymentSlotSettings.checkBoxIsEnabled
-        if (config.isDeployToSlot.xor(slotCheckBox.isSelected)) {
-            slotCheckBox.doClick()
-
-            val cbDeploymentSlots = pnlExistingWebApp.pnlDeploymentSlotSettings.cbDeploymentSlots
-            if (config.appId.isNotEmpty() && config.slotName.isNotEmpty() && cbDeploymentSlots.items.isNotEmpty()) {
-                val slotToSelect = cbDeploymentSlots.items.find { it.name() == config.slotName }
-                if (slotToSelect != null)
-                    cbDeploymentSlots.selectedItem = slotToSelect
-            }
-        }
+        pnlExistingWebApp.pnlDeploymentSlotSettings.initialData.set(
+                InitialDeploymentSlotData(config.appId, config.isDeployToSlot, config.slotName))
 
         // Settings
         val isOpenInBrowser = PropertiesComponent.getInstance().getBoolean(
