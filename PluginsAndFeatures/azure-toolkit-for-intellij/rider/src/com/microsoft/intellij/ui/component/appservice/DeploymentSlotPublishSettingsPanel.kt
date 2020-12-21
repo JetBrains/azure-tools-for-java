@@ -28,6 +28,7 @@ import com.jetbrains.rd.util.getOrCreate
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rd.util.reactive.IProperty
 import com.jetbrains.rd.util.reactive.Property
+import com.jetbrains.rd.util.reactive.Signal
 import com.microsoft.azure.management.appservice.DeploymentSlot
 import com.microsoft.azure.management.appservice.DeploymentSlotBase
 import com.microsoft.azure.management.appservice.FunctionDeploymentSlot
@@ -72,17 +73,17 @@ class DeploymentSlotPublishSettingsPanel(lifetime: Lifetime) :
             )
 }
 
-data class InitialDeploymentSlotData(val appId: String, val isDeployToSlot: Boolean, val slotName: String)
-
 abstract class DeploymentSlotPublishSettingsPanelBase<T: DeploymentSlotBase<T>>(private val lifetime: Lifetime) :
         JPanel(MigLayout("novisualpadding, ins 0, fillx, wrap 2", "[min!][]")),
         AzureComponent {
+
+    data class LoadFinishedData<T: DeploymentSlotBase<T>>(val appId: String, val slots: List<T>)
 
     private val appToSlotsMap = concurrentMapOf<WebAppBase, List<T>>()
 
     val appProperty: IProperty<WebAppBase?> = Property(null)
 
-    val initialData: IProperty<InitialDeploymentSlotData?> = Property(null)
+    val loadFinished = Signal<LoadFinishedData<T>>()
 
     val checkBoxIsEnabled: JCheckBox = JCheckBox("Deploy to slot:", false)
 
@@ -110,18 +111,7 @@ abstract class DeploymentSlotPublishSettingsPanelBase<T: DeploymentSlotBase<T>>(
             checkBoxIsEnabled.isEnabled = slots.isNotEmpty()
             this.isEnabled = slots.isNotEmpty()
 
-            initialData.value?.let { init ->
-                if (init.isDeployToSlot.xor(checkBoxIsEnabled.isSelected)) {
-                    checkBoxIsEnabled.doClick()
-
-                    if (init.appId.isNotEmpty() && init.appId == app.id() && init.slotName.isNotEmpty() && slots.isNotEmpty()) {
-                        val slotToSelect = slots.find { it.name() == init.slotName }
-                        if (slotToSelect != null)
-                            this.selectedItem = slotToSelect
-                    }
-                }
-                initialData.set(null)
-            }
+            loadFinished.fire(LoadFinishedData(app.id(), slots))
 
             return slots
         }
