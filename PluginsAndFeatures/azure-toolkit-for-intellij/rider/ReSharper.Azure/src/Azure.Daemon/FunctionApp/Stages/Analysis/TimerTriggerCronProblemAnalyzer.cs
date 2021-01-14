@@ -72,8 +72,15 @@ namespace JetBrains.ReSharper.Azure.Daemon.FunctionApp.Stages.Analysis
             
             if (literal.StartsWith("%") && literal.EndsWith("%") && literal.Length > 2) return;
 
-            if (!IsValidCrontabSchedule(literal, out var errorMessage) &&
-                !IsValidTimeSpanSchedule(literal, out errorMessage))
+            var mayBeTimeSpanSchedule = literal.Contains(":");
+            if (mayBeTimeSpanSchedule)
+            {
+                if (!IsValidTimeSpanSchedule(literal, out var errorMessage))
+                {
+                    consumer.AddHighlighting(new TimerTriggerCronExpressionError(expressionArgument, errorMessage));
+                }
+            }
+            else if (!IsValidCrontabSchedule(literal, out var errorMessage))
             {
                 consumer.AddHighlighting(new TimerTriggerCronExpressionError(expressionArgument, errorMessage));
             }
