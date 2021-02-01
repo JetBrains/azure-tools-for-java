@@ -114,7 +114,7 @@ class FunctionHostConfigurationTest : BaseTestWithSolution() {
         configuration.parameters.projectFilePath = projectToRun.projectFilePath
         configuration.parameters.workingDirectory = projectToRun.projectOutputs.first().workingDirectory
         configuration.parameters.exePath = projectToRun.projectOutputs.first().exePath
-        configuration.parameters.projectTfm = projectToRun.projectOutputs.first().tfm
+        configuration.parameters.projectTfm = projectToRun.projectOutputs.first().tfm?.presentableName ?: ""
 
         configuration.beforeRunTasks.size.shouldBe(1)
         configuration.beforeRunTasks[0].providerId.shouldBe(BuildFunctionsProjectBeforeRunTaskProvider.providerId)
