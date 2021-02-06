@@ -200,6 +200,10 @@
                          instance="org.jetbrains.plugins.azure.functions.settings.templates.RiderAzureCSharpFileTemplatesOptionPage"
                          groupWeight="-150" />
 
+    <projectConfigurable parentId="FileTemplatesSettingsId"
+                         instance="org.jetbrains.plugins.azure.functions.settings.templates.RiderAzureFSharpFileTemplatesOptionPage"
+                         groupWeight="-150" />
+
     <configurationType implementation="com.microsoft.intellij.runner.webapp.config.RiderWebAppConfigurationType"/>
     <programRunner implementation="com.microsoft.intellij.runner.webapp.config.RiderWebAppRunner"/>
     <rider.publishConfigurationProvider implementation="com.microsoft.intellij.runner.webapp.WebAppContextPublishProvider" order="last" />
