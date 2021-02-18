@@ -53,7 +53,7 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                 file.extension.equals("vb", true) ||
                 file.extension.equals("fs", true)
 
-        private fun existsInCurrentProject(project: Project, workspaceModel: WorkspaceModel, file: VirtualFile): Boolean =
+        private fun existsInCurrentProject(project: Project, file: VirtualFile): Boolean =
                 file.exists() && VfsUtil.isAncestor(VfsUtil.findFileByIoFile(File(project.basePath!!), false)!!, file, false)
 
         private fun isNewOrMarkedForProcessing(file: VirtualFile, event: VFileEvent) = when (event) {
@@ -93,7 +93,7 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
 
                     if (hasKnownFileSuffix(file) &&
                             isNewOrMarkedForProcessing(file, event) &&
-                            existsInCurrentProject(project, workspaceModel, file)) {
+                            existsInCurrentProject(project, file)) {
 
                         // First pass(es), no content will be in the file.
                         // If that is the case, mark the file for processing on later changes.
