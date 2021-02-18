@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020 JetBrains s.r.o.
+ * Copyright (c) 2020-2021 JetBrains s.r.o.
  *
  * All rights reserved.
  *
@@ -44,6 +44,8 @@ import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.impl.virtualFile
 import com.jetbrains.rider.projectView.workspace.ProjectModelEntity
 import com.jetbrains.rider.projectView.workspace.containingProjectEntity
+import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
+import com.jetbrains.rider.projectView.workspace.getVirtualFileAsParent
 import com.jetbrains.rider.util.idea.PsiFile
 import com.microsoft.azure.management.graphrbac.GraphErrorException
 import com.microsoft.azure.management.graphrbac.implementation.ApplicationCreateParametersInner
@@ -58,7 +60,6 @@ import com.microsoft.azuretools.sdkmanage.AzureManager
 import icons.CommonIcons
 import org.jetbrains.plugins.azure.AzureNotifications
 import org.jetbrains.plugins.azure.RiderAzureBundle
-import org.jetbrains.plugins.azure.functions.findProjectsWithVirtualFile
 import org.jetbrains.plugins.azure.identity.ad.appsettings.AppSettingsAzureAdSection
 import org.jetbrains.plugins.azure.identity.ad.appsettings.AppSettingsAzureAdSectionManager
 import org.jetbrains.plugins.azure.identity.ad.ui.RegisterApplicationInAzureAdDialog
@@ -302,7 +303,10 @@ class RegisterApplicationInAzureAdAction
     private fun tryGetProjectModelEntityFromFile(project: Project, file: VirtualFile?): ProjectModelEntity? {
         if (file == null) return null
 
-        return WorkspaceModel.getInstance(project).findProjectsWithVirtualFile(file).firstOrNull()
+        return WorkspaceModel.getInstance(project)
+                .getProjectModelEntities(file, project)
+                .mapNotNull { it.containingProjectEntity() }
+                .firstOrNull()
     }
 
     private fun tryGetAppSettingsJsonVirtualFile(entity: ProjectModelEntity): VirtualFile? {
@@ -310,7 +314,7 @@ class RegisterApplicationInAzureAdAction
 
         if (isAppSettingsJsonFileName(itemVirtualFile?.name)) return itemVirtualFile
 
-        return entity.containingProjectEntity()?.url?.virtualFile?.parent?.findChild(appSettingsJsonFileName)
+        return entity.containingProjectEntity()?.getVirtualFileAsParent()?.findChild(appSettingsJsonFileName)
     }
 
     private fun defaultDomainForTenant(graphClient: GraphRbacManagementClientImpl) =

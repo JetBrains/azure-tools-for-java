@@ -24,13 +24,11 @@
 
 package org.jetbrains.plugins.azure.functions
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.impl.LoadTextUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.registry.Registry
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
@@ -38,10 +36,12 @@ import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.workspaceModel.ide.WorkspaceModel
-import com.intellij.workspaceModel.ide.impl.virtualFile
+import com.jetbrains.rd.platform.util.application
 import com.jetbrains.rider.nuget.RiderNuGetHost
-import com.jetbrains.rider.projectView.workspace.*
-import java.io.File
+import com.jetbrains.rider.projectView.workspace.containingProjectEntity
+import com.jetbrains.rider.projectView.workspace.getId
+import com.jetbrains.rider.projectView.workspace.getProjectModelEntities
+import com.jetbrains.rider.projectView.workspace.impl.WorkspaceProjectRootsTracker
 
 class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
     companion object {
@@ -54,7 +54,7 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                 file.extension.equals("fs", true)
 
         private fun existsInCurrentProject(project: Project, file: VirtualFile): Boolean =
-                file.exists() && VfsUtil.isAncestor(VfsUtil.findFileByIoFile(File(project.basePath!!), false)!!, file, false)
+                WorkspaceProjectRootsTracker.getInstance(project).contains(file)
 
         private fun isNewOrMarkedForProcessing(file: VirtualFile, event: VFileEvent) = when (event) {
             is VFileCreateEvent -> true
@@ -86,8 +86,6 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
             override fun after(events: MutableList<out VFileEvent>) {
                 if (!Registry.`is`(enableAzureFunctionsInstallMissingNupkg, true)) return
 
-                val workspaceModel = WorkspaceModel.getInstance(project)
-
                 for (event in events) {
                     val file = event.file ?: continue
 
@@ -102,60 +100,50 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                             continue
                         }
 
-                        ApplicationManager.getApplication().runReadAction {
-                            val text = LoadTextUtil.loadText(file, 4096)
+                        application.invokeLater {
+                            application.runReadAction {
+                                var keepMarker = false
+                                val text = LoadTextUtil.loadText(file, 4096)
 
-                            // Check for known marker words
-                            if (knownMarkerWords.any { text.contains(it, true) }) {
-                                // Determine project(s) to install into
-                                val installableProjects = workspaceModel.findProjectsWithVirtualFile(file)
+                                // Check for known marker words
+                                if (knownMarkerWords.any { text.contains(it, true) }) {
+                                    // Determine project(s) to install into
+                                    val installableProjects = WorkspaceModel.getInstance(project)
+                                            .getProjectModelEntities(file, project)
+                                            .mapNotNull { it.containingProjectEntity() }
 
-                                // For every known trigger name, verify required dependencies are installed
-                                for ((triggerName, dependency) in triggerMap) {
-                                    if (text.contains(triggerName, true)) {
-                                        for (installableProject in installableProjects) {
-                                            val riderNuGetFacade = RiderNuGetHost.getInstance(project)
-                                                    .facade
+                                    if (installableProjects.isEmpty()) {
+                                        keepMarker = true
+                                    }
 
-                                            val isInstalled = riderNuGetFacade.host.nuGetProjectModel
-                                                    .projects[installableProject.getId(project)]
-                                                    ?.explicitPackages?.any { it.id.equals(dependency.id, ignoreCase = true) }
-                                                        ?: false
+                                    // For every known trigger name, verify required dependencies are installed
+                                    for ((triggerName, dependency) in triggerMap) {
+                                        if (text.contains(triggerName, true)) {
+                                            for (installableProject in installableProjects) {
+                                                val riderNuGetFacade = RiderNuGetHost.getInstance(project)
+                                                        .facade
 
-                                            if (!isInstalled) {
-                                                riderNuGetFacade.installForProject(
-                                                        installableProject.name, dependency.id, dependency.version)
+                                                val isInstalled = riderNuGetFacade.host.nuGetProjectModel
+                                                        .projects[installableProject.getId(project)]
+                                                        ?.explicitPackages?.any { it.id.equals(dependency.id, ignoreCase = true) }
+                                                            ?: false
+
+                                                if (!isInstalled) {
+                                                    riderNuGetFacade.installForProject(
+                                                            installableProject.name, dependency.id, dependency.version)
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
 
-                            // Remove marker
-                            file.putUserData(markedForProcessing, false)
+                                // Remove marker
+                                file.putUserData(markedForProcessing, keepMarker)
+                            }
                         }
                     }
                 }
             }
         })
     }
-}
-
-fun WorkspaceModel.findProjectsWithVirtualFile(virtualFile: VirtualFile): List<ProjectModelEntity> {
-    val visitor = object : ProjectModelEntityVisitor() {
-        val projects: HashSet<ProjectModelEntity> = hashSetOf()
-
-        override fun visitNode(entity: ProjectModelEntity): Result {
-            if (entity.url?.virtualFile == virtualFile) {
-                entity.containingProjectEntity()?.let { projects.add(it) }
-            }
-
-            return Result.Continue
-        }
-    }
-
-    getSolutionEntity()?.let {
-        visitor.visit(it)
-    }
-    return visitor.projects.toList()
 }
