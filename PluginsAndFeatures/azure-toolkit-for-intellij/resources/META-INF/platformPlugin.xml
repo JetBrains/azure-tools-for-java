@@ -6,7 +6,7 @@
     <html>
       <h4>Bug fix:</h4>
       <ul>
-        <li>Fix Azure Toolkit for Rider: Deployment Slot setting is not saved (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/423">#423</a>)</li>
+        <li>Don't output error message when not needed (<a href="https://github.com/JetBrains/azure-tools-for-intellij/pull/461">#461</a>)</li>
       </ul>
     </html>
     ]]>
