@@ -53,7 +53,7 @@ public class ErrorWindow extends AzureDialogWrapper {
     public static void show(@Nullable Project project, Exception exception, String title, String okButtonText, Runnable okAction) {
         String message = exception.getMessage();
 
-        final AuthException authException = AuthExceptionUtil.GetUserRetryableAuthException(exception);
+        final AuthException authException = AuthExceptionUtil.getUserRetryableAuthException(exception);
         if (authException != null) {
             message += "\n\n" + authException.getErrorMessage();
         }

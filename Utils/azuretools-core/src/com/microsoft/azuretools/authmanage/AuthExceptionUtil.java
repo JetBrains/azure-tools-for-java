@@ -37,7 +37,7 @@ public final class AuthExceptionUtil {
      * @param throwable Throwable to check.
      * @return When a Throwable is an AuthException that requires the user to re-authenticate, returns the AuthException. Returns null otherwise.
      */
-    public static AuthException GetUserRetryableAuthException(Throwable throwable) {
+    public static AuthException getUserRetryableAuthException(Throwable throwable) {
 
         final Throwable rootCause = ExceptionUtils.getRootCause(throwable);
         if (rootCause instanceof AuthException) {
