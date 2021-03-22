@@ -11,11 +11,9 @@
         <li>Enable build-throttling and support compound run configurations (<a href="https://youtrack.jetbrains.com/issue/RIDER-57482">RIDER-57482</a>)</li>
       </ul>
       <h4>Fixed bugs:</h4>
-        <ul>
-          <li>TimerTrigger also support TimeSpan string (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/434">#434</a>)</li>
-        </ul>
-      <h4>Bug fixes:</h4>
       <ul>
+        <li>TimerTrigger also support TimeSpan string (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/434">#434</a>)</li>
+        <li>Fix Rider may hang on loading screen due to exception (<a href="https://github.com/JetBrains/azure-tools-for-intellij/issues/459">#459</a>)</li>
         <li>Show Azure tool windows on-demand (<a href="https://youtrack.jetbrains.com/issue/RIDER-58297">RIDER-58297</a>)</li>
       </ul>
     </html>
