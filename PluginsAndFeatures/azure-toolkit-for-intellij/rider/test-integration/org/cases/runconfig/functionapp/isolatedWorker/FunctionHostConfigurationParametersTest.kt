@@ -351,7 +351,7 @@ class FunctionHostConfigurationParametersTest : BaseTestWithSolution() {
             trackProjectArguments: Boolean = false,
             trackProjectWorkingDirectory: Boolean = false,
             projectKind: RunnableProjectKind = RunnableProjectKind.AzureFunctions,
-            projectTfm: String = ".NETCoreApp,Version=v3.1",
+            projectTfm: String = "net5.0",
             functionNames: String = "",
             startBrowserParameters: DotNetStartBrowserParameters = DotNetStartBrowserParameters()
     ): AzureFunctionsHostConfigurationParameters =

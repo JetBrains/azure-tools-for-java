@@ -74,7 +74,8 @@ class FunctionHostConfigurationEditorTest : BaseTestWithSolution() {
         editor.applyTo(configuration)
 
         val runnableProject =
-                project.solution.runnableProjectsModel.projects.valueOrNull?.find { it.name == "FunctionAppIsolated" }.shouldNotBeNull()
+                project.solution.runnableProjectsModel.projects.valueOrNull?.find {
+                    it.name == "FunctionAppIsolated" && it.kind == RunnableProjectKind.AzureFunctions }.shouldNotBeNull()
 
         val parameters = configuration.parameters
         parameters.project.name.shouldBe("FunctionAppIsolated")

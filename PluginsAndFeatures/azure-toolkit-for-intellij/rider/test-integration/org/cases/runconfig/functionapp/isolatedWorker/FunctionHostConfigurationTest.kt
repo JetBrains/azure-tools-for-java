@@ -70,9 +70,10 @@ class FunctionHostConfigurationTest : BaseTestWithSolution() {
 
     //region Configuration
 
-    @Test(description = "Function App project should create one default run configuration to run function app.")
+    @Test(description = "Function App project should create a default run configuration to run function app.")
     fun testFunctionHost_DefaultRunConfigurations() {
         val allConfigurations = RunManagerEx.getInstanceEx(project).allConfigurationsList
+                .filter { it.javaClass == AzureFunctionsHostConfiguration::class.java }
 
         allConfigurations.size.shouldBe(1)
         allConfigurations[0].javaClass.shouldBe(AzureFunctionsHostConfiguration::class.java)
@@ -110,7 +111,7 @@ class FunctionHostConfigurationTest : BaseTestWithSolution() {
                 ?: fail("Project to run is not found.")
 
         configuration.parameters.projectKind = RunnableProjectKind.AzureFunctions
-        configuration.parameters.projectTfm = ".NETCoreApp,Version=v3.1"
+        configuration.parameters.projectTfm = "net5.0"
         configuration.parameters.projectFilePath = projectToRun.projectFilePath
         configuration.parameters.workingDirectory = projectToRun.projectOutputs.first().workingDirectory
         configuration.parameters.exePath = projectToRun.projectOutputs.first().exePath
