@@ -36,8 +36,8 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
         public override IEnumerable<ITemplateScopePoint> BuildAllPoints()
         {
             yield return new InAzureFunctionsCSharpProject();
-            yield return new InAzureFunctionsProjectWithDefaultWorker();
-            yield return new InAzureFunctionsProjectWithIsolatedWorker();
+            yield return new MustUseAzureFunctionsDefaultWorker();
+            yield return new MustUseAzureFunctionsIsolatedWorker();
         }
 
         public override string CategoryCaption => "Azure (C#)";

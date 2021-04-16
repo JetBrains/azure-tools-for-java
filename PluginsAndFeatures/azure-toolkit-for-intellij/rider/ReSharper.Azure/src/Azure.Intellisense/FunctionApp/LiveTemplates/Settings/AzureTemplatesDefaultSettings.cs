@@ -18,26 +18,26 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections.Generic;
-using JetBrains.ProjectModel.Resources;
-using JetBrains.ReSharper.Feature.Services.LiveTemplates.Scope;
+using System.IO;
+using System.Reflection;
+using JetBrains.Application;
+using JetBrains.Application.Settings;
+using JetBrains.Diagnostics;
+using JetBrains.Lifetimes;
 
-namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
+namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Settings
 {
-    [ScopeCategoryUIProvider(Priority = -41.0, ScopeFilter = ScopeFilter.Project)]
-    public class AzureFSharpProjectScopeCategoryUIProvider : ScopeCategoryUIProvider
+    [ShellComponent]
+    public class AzureTemplatesDefaultSettings : IHaveDefaultSettingsStream
     {
-        public AzureFSharpProjectScopeCategoryUIProvider() : base(ProjectModelThemedIcons.Fsharp.Id)
+        public Stream GetDefaultSettingsStream(Lifetime lifetime)
         {
-            MainPoint = new InAzureFunctionsFSharpProject();
+            var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("JetBrains.ReSharper.Azure.Templates.templates.dotSettings");
+            Assertion.AssertNotNull(stream, "stream != null");
+            lifetime.AddDispose(stream);
+            return stream;
         }
 
-        public override IEnumerable<ITemplateScopePoint> BuildAllPoints()
-        {
-            yield return new InAzureFunctionsFSharpProject();
-            yield return new MustUseAzureFunctionsDefaultWorker();
-        }
-
-        public override string CategoryCaption => "Azure (F#)";
+        public string Name => "Azure default templates";
     }
 }

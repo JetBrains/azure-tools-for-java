@@ -42,6 +42,8 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
         public AzureProjectScopeProvider()
         {
             Creators.Add(TryToCreate<InAzureFunctionsProject>);
+            Creators.Add(TryToCreate<MustUseAzureFunctionsDefaultWorker>);
+            Creators.Add(TryToCreate<MustUseAzureFunctionsIsolatedWorker>);
         }
 
         public override IEnumerable<ITemplateScopePoint> ProvideScopePoints(TemplateAcceptanceContext context)
@@ -53,10 +55,10 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
                 yield return new InAzureFunctionsProject();
                 
                 if (FunctionAppProjectDetector.DefaultWorker.HasFunctionsPackageReference(project, null))
-                    yield return new InAzureFunctionsProjectWithDefaultWorker();
+                    yield return new MustUseAzureFunctionsDefaultWorker();
                 
                 if (FunctionAppProjectDetector.IsolatedWorker.HasFunctionsPackageReference(project, null))
-                    yield return new InAzureFunctionsProjectWithIsolatedWorker();
+                    yield return new MustUseAzureFunctionsIsolatedWorker();
         
                 foreach (var scope in GetLanguageSpecificScopePoints(project)) 
                     yield return scope;
@@ -69,7 +71,7 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
         }
     }
     
-    public class InAzureFunctionsProjectWithDefaultWorker : InAzureFunctionsProject
+    public class MustUseAzureFunctionsDefaultWorker : InAzureFunctionsProject, IMandatoryScopePoint
     {
         private static readonly Guid ourDefaultGuid = new Guid("1E429A05-3577-4B43-86FD-8EC8AF9C877F");
 
@@ -77,7 +79,7 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
         public override string PresentableShortName => "Azure Functions with Default Worker";
     }  
     
-    public class InAzureFunctionsProjectWithIsolatedWorker : InAzureFunctionsProject
+    public class MustUseAzureFunctionsIsolatedWorker : InAzureFunctionsProject, IMandatoryScopePoint
     {
         private static readonly Guid ourDefaultGuid = new Guid("081BD100-484A-4FB2-AD24-B2EC16E68547");
 
