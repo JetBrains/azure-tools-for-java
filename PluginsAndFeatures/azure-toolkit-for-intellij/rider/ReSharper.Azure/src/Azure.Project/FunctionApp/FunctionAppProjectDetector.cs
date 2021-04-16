@@ -34,23 +34,23 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
 {
     public static class FunctionAppProjectDetector
     {
-        static class DefaultWorker
+        public static class DefaultWorker
         {
             public static readonly NugetId ExpectedPackage = new NugetId("Microsoft.NET.Sdk.Functions");
             
-            public static bool HasFunctionsPackageReference(IProject project, TargetFrameworkId targetFrameworkId)
+            public static bool HasFunctionsPackageReference(IProject project, [CanBeNull] TargetFrameworkId targetFrameworkId)
             {
-                return project.GetPackagesReference(DefaultWorker.ExpectedPackage, targetFrameworkId) != null;
+                return project.GetPackagesReference(ExpectedPackage, targetFrameworkId) != null;
             }
         }
         
-        static class IsolatedWorker
+        public static class IsolatedWorker
         {
             public static readonly NugetId ExpectedPackage = new NugetId("Microsoft.Azure.Functions.Worker");
             
-            public static bool HasFunctionsPackageReference(IProject project, TargetFrameworkId targetFrameworkId)
+            public static bool HasFunctionsPackageReference(IProject project, [CanBeNull] TargetFrameworkId targetFrameworkId)
             {
-                return project.GetPackagesReference(IsolatedWorker.ExpectedPackage, targetFrameworkId) != null;
+                return project.GetPackagesReference(ExpectedPackage, targetFrameworkId) != null;
             }
         }
         
@@ -129,8 +129,9 @@ namespace JetBrains.ReSharper.Azure.Project.FunctionApp
                 .FirstNotNull());
 
             // 2) Check expected package reference.
-            var hasExpectedPackageReference = DefaultWorker.HasFunctionsPackageReference(project, targetFrameworkId) || 
-                                              IsolatedWorker.HasFunctionsPackageReference(project, targetFrameworkId);
+            var hasExpectedPackageReference = 
+                DefaultWorker.HasFunctionsPackageReference(project, targetFrameworkId) || 
+                IsolatedWorker.HasFunctionsPackageReference(project, targetFrameworkId);
 
             // 3) Check existence of host.json in the project
             var hasHostJsonFile = project
