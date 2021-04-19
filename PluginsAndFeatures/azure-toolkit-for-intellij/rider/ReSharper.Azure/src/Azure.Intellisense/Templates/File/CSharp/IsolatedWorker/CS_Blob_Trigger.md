@@ -3,6 +3,7 @@ guid: 7ae1d45e-28cd-48d2-bbb6-bc92bbd64254
 type: File
 reformat: True
 shortenReferences: True
+image: AzureFunctionsTrigger
 customProperties: Extension=cs, FileName=BlobTrigger, ValidateFileName=True
 scopes: InAzureFunctionsCSharpProject;MustUseAzureFunctionsIsolatedWorker
 parameterOrder: (HEADER), (NAMESPACE), (CLASS), PATHVALUE, (CONNECTIONVALUE)

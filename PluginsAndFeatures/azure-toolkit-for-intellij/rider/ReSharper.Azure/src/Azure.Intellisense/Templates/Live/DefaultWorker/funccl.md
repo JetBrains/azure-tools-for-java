@@ -3,6 +3,7 @@ guid: e3039c5d-886c-4cde-9bbc-9e1155d879ee
 type: Live
 reformat: True
 shortenReferences: True
+image: AzureFunctionsTrigger
 ---
 
 # funccl

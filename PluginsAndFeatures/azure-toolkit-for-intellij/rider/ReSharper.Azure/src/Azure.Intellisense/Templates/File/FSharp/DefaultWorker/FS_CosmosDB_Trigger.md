@@ -3,6 +3,7 @@ guid: f1ebe6f2-b045-4476-87ef-d9458ec74c23
 type: File
 reformat: True
 shortenReferences: True
+image: AzureFunctionsTrigger
 customProperties: Extension=fs, FileName=CosmosDbTrigger, ValidateFileName=True
 scopes: InAzureFunctionsFSharpProject;MustUseAzureFunctionsDefaultWorker
 parameterOrder: (HEADER), (NAMESPACE), (CLASS), DATABASEVALUE, COLLECTIONVALUE, (CONNECTIONVALUE)

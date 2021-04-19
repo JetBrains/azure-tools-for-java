@@ -3,6 +3,7 @@ guid: 4c32fa2b-ec21-4789-ba43-b5a897fb8f5b
 type: File
 reformat: True
 shortenReferences: True
+image: AzureFunctionsTrigger
 customProperties: Extension=fs, FileName=EventGridTrigger, ValidateFileName=True
 scopes: InAzureFunctionsFSharpProject;MustUseAzureFunctionsDefaultWorker
 parameterOrder: (HEADER), (NAMESPACE), (CLASS)

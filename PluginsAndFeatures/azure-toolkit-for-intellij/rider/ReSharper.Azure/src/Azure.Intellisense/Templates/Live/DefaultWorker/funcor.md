@@ -3,6 +3,7 @@ guid: 555928d8-ac13-469a-aad5-5b3ef6ad3dc6
 type: Live
 reformat: True
 shortenReferences: True
+image: AzureFunctionsTrigger
 scopes: InCSharpFile(minimumLanguageVersion=2.0)
 parameterOrder: OrchestratorClassName
 ---

@@ -3,6 +3,7 @@ guid: 9231f311-94ee-4170-a2ce-db05af3c12b6
 type: Live
 reformat: True
 shortenReferences: True
+image: AzureFunctionsTrigger
 scopes: InCSharpFile(minimumLanguageVersion=2.0)
 parameterOrder: CLASS, DATABASEVALUE, COLLECTIONVALUE, (CONNECTIONVALUE)
 CLASS-expression: getAlphaNumericFileNameWithoutExtension()

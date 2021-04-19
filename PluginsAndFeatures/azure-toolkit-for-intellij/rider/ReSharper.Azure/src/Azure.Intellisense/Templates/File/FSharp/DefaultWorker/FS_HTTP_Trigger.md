@@ -3,6 +3,7 @@ guid: e8104b0a-97de-4847-b8f0-5b9f438bdc92
 type: File
 reformat: True
 shortenReferences: True
+image: AzureFunctionsTrigger
 customProperties: Extension=fs, FileName=HttpTrigger, ValidateFileName=True
 scopes: InAzureFunctionsFSharpProject;MustUseAzureFunctionsDefaultWorker
 parameterOrder: (HEADER), (NAMESPACE), (CLASS), AUTHLEVELVALUE

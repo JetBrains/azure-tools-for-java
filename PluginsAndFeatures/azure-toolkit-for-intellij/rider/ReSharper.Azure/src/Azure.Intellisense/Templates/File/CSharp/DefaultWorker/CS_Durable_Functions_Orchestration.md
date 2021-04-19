@@ -3,6 +3,7 @@ guid: 14b8e2f1-d157-4aae-9977-557216c67fd6
 type: File
 reformat: True
 shortenReferences: True
+image: AzureFunctionsTrigger
 customProperties: Extension=cs, FileName=DurableFunctionsOrchestration, ValidateFileName=True
 scopes: InAzureFunctionsCSharpProject;MustUseAzureFunctionsDefaultWorker
 parameterOrder: (HEADER), (NAMESPACE), (CLASS)

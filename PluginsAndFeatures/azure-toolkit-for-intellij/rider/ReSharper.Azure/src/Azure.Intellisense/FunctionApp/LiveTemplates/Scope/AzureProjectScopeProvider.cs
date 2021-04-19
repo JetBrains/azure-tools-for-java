@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2020 JetBrains s.r.o.
+﻿// Copyright (c) 2020-2021 JetBrains s.r.o.
 //
 // All rights reserved.
 //
@@ -21,10 +21,13 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Application;
+using JetBrains.Application.UI.Icons.CommonThemedIcons;
 using JetBrains.ProjectModel;
 using JetBrains.ReSharper.Azure.Project.FunctionApp;
 using JetBrains.ReSharper.Feature.Services.LiveTemplates.Context;
 using JetBrains.ReSharper.Feature.Services.LiveTemplates.Scope;
+using JetBrains.ReSharper.Feature.Services.LiveTemplates.Templates;
+using JetBrains.UI.ThemedIcons;
 
 namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
 {
@@ -39,6 +42,11 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Scope
     [ShellComponent]
     public class AzureProjectScopeProvider : ScopeProvider
     {
+        static AzureProjectScopeProvider()
+        {
+            TemplateImage.Register("AzureFunctionsTrigger", FunctionAppTemplatesThemedIcons.AzureFunctionsTrigger.Id);
+        }
+        
         public AzureProjectScopeProvider()
         {
             Creators.Add(TryToCreate<InAzureFunctionsProject>);

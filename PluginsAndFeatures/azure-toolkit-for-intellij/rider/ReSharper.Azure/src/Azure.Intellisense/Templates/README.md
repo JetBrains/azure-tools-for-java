@@ -51,5 +51,5 @@ Shortcut | Description
 [funcqueue](Live/DefaultWorker/funcqueue.md) | Creates an Azure Function method with a queue trigger.
 [funcsbqueue](Live/DefaultWorker/funcsbqueue.md) | Creates an Azure Function method with a Service Bus queue trigger.
 [funcsbtopic](Live/DefaultWorker/funcsbtopic.md) | Creates an Azure Function method with a Service Bus topic trigger.
-[functimer](Live/DefaultWorker/functimer.md) | Creates an Azure Function method with a timer trigger.0 */5 * * * *
+[functimer](Live/DefaultWorker/functimer.md) | Creates an Azure Function method with a timer trigger.
 
