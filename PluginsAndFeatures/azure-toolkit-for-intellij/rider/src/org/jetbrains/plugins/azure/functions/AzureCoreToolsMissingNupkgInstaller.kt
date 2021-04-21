@@ -115,10 +115,10 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
                         application.invokeLater {
                             application.runReadAction {
                                 var keepMarker = false
-                                val text = LoadTextUtil.loadText(file, 4096)
+                                val fileContent = LoadTextUtil.loadText(file, 4096)
 
                                 // Check for known marker words
-                                val knownMarker = markerToTriggerMap.filter { text.contains(it.key, true) }.firstOrNull()
+                                val knownMarker = markerToTriggerMap.filter { fileContent.contains(it.key, true) }.firstOrNull()
                                 if (knownMarker != null) {
                                     // Determine project(s) to install into
                                     val installableProjects = WorkspaceModel.getInstance(project)
@@ -131,7 +131,7 @@ class AzureCoreToolsMissingNupkgInstaller : StartupActivity {
 
                                     // For every known trigger name, verify required dependencies are installed
                                     for ((triggerName, dependency) in knownMarker.value) {
-                                        if (text.contains(triggerName, true)) {
+                                        if (fileContent.contains(triggerName, true)) {
                                             for (installableProject in installableProjects) {
                                                 val riderNuGetFacade = RiderNuGetHost.getInstance(project)
                                                         .facade

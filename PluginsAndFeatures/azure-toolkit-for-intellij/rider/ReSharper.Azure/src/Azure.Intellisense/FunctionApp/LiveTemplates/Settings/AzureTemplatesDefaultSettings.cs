@@ -33,7 +33,7 @@ namespace JetBrains.ReSharper.Azure.Intellisense.FunctionApp.LiveTemplates.Setti
         public Stream GetDefaultSettingsStream(Lifetime lifetime)
         {
             var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("JetBrains.ReSharper.Azure.Templates.templates.dotSettings");
-            Assertion.AssertNotNull(stream, "stream != null");
+            Assertion.AssertNotNull(stream, "stream should not be null");
             lifetime.AddDispose(stream);
             return stream;
         }
