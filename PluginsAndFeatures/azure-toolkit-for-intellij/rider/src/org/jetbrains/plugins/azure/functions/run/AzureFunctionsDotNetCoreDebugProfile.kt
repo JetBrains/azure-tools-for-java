@@ -40,11 +40,11 @@ import com.jetbrains.rider.run.*
 import com.jetbrains.rider.runtime.DotNetExecutable
 
 class AzureFunctionsDotNetCoreDebugProfile(
+        private val functionsRuntime: AzureFunctionsDotNetCoreRuntime,
         private val dotNetExecutable: DotNetExecutable,
         executionEnvironment: ExecutionEnvironment,
-        private val coreToolsExecutablePath: String,
-        private val funcCoreToolsPath: String)
-    : DebugProfileStateBase(executionEnvironment) {
+        private val coreToolsExecutablePath: String)
+    : DebugProfileStateBase(executionEnvironment), IDotNetDebugProfileStateWithExecutable {
 
     override suspend fun createWorkerRunInfo(lifetime: Lifetime, helper: DebuggerHelperHost, port: Int): WorkerRunInfo {
         val runInfo = WorkerRunInfo(
@@ -91,7 +91,7 @@ class AzureFunctionsDotNetCoreDebugProfile(
                 dotNetExecutable.exePath,
                 dotNetExecutable.workingDirectory,
                 dotNetExecutable.programParameterString,
-                dotNetExecutable.environmentVariables.toModelMap,
+                functionsRuntime.prepareEnvVars(dotNetExecutable.environmentVariables).toModelMap,
                 dotNetExecutable.runtimeArguments,
                 dotNetExecutable.executeAsIs,
                 dotNetExecutable.useExternalConsole,
@@ -100,4 +100,5 @@ class AzureFunctionsDotNetCoreDebugProfile(
 
     override val attached: Boolean = false
 
+    override fun getExecutable(): DotNetExecutable = dotNetExecutable
 }
