@@ -35,10 +35,14 @@ import com.jetbrains.rider.runtime.SuspendedAttachableDotNetRuntime
 import com.jetbrains.rider.runtime.dotNetCore.DotNetCoreRuntimeType
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfo
 
-class AzureFunctionsDotNetCoreRuntime(val coreToolsInfo: FunctionsCoreToolsInfo)
+class AzureFunctionsDotNetCoreRuntime(val coreToolsInfo: FunctionsCoreToolsInfo, val workerRuntime: String)
     : DotNetRuntime(DotNetCoreRuntimeType), SuspendedAttachableDotNetRuntime {
 
     override fun createDebugState(dotNetExecutable: DotNetExecutable, executionEnvironment: ExecutionEnvironment) : IDotNetDebugProfileState {
+        if (workerRuntime.equals("dotnet-isolated", ignoreCase = true)) {
+            return AzureFunctionsDotNetCoreIsolatedDebugProfile(dotNetExecutable, executionEnvironment)
+        }
+
         return AzureFunctionsDotNetCoreDebugProfile(dotNetExecutable, executionEnvironment, coreToolsInfo.coreToolsExecutable, coreToolsInfo.coreToolsPath)
     }
 
