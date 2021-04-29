@@ -42,7 +42,9 @@ import com.jetbrains.rider.model.debuggerWorker.DebuggerStartInfoBase
 import com.jetbrains.rider.model.debuggerWorker.DotNetCoreAttachStartInfo
 import com.jetbrains.rider.run.*
 import com.jetbrains.rider.runtime.DotNetExecutable
+import com.microsoft.intellij.util.PluginUtil
 import org.apache.commons.lang.StringUtils
+import org.jetbrains.plugins.azure.RiderAzureBundle
 import java.time.Duration
 
 class AzureFunctionsDotNetCoreIsolatedDebugProfile(
@@ -62,12 +64,22 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
         // Launch Azure Functions host process
         launchAzureFunctionsHost()
 
-        // Wait until we get a process ID
+        // Wait until we get a process ID (or the process terminates)
         pumpMessages(Duration.ofMinutes(5)) {
-            processId != 0
+            processId != 0 || targetProcessHandler.isProcessTerminated
         }
         if (processId == 0) {
             logger.error("Azure Functions host did not return isolated worker process id.")
+
+            // REVIEW: If we do not get pid from the isolated worker process, should we destroy the process here?
+            if (!targetProcessHandler.isProcessTerminating && !targetProcessHandler.isProcessTerminated) {
+                targetProcessHandler.destroyProcess()
+            }
+
+            // REVIEW: Should we throw here instead?
+            PluginUtil.showErrorNotification(
+                    RiderAzureBundle.message("run_config.run_function_app.debug.notification.title"),
+                    RiderAzureBundle.message("run_config.run_function_app.debug.notification.isolated_worker_pid_unspecified"))
         }
 
         // Create debugger worker info
@@ -98,15 +110,17 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
             override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
                 val line = event.text
 
-                if (StringUtils.containsIgnoreCase(line, "Azure Functions .NET Worker (PID: ")
-                        && StringUtils.containsIgnoreCase(line, ") initialized")) {
+                if (processId == 0 &&
+                        StringUtils.containsIgnoreCase(line, "Azure Functions .NET Worker (PID: ") &&
+                        StringUtils.containsIgnoreCase(line, ") initialized")) {
 
-                    val pidFromLog = line.substringAfter("PID: ").dropWhile { !it.isDigit() }.takeWhile { it.isDigit() }.toInt()
+                    val pidFromLog = line.substringAfter("PID: ")
+                            .dropWhile { !it.isDigit() }
+                            .takeWhile { it.isDigit() }
+                            .toInt()
+
                     logger.info("Functions isolated worker process id: $pidFromLog")
-
-                    if (processId == 0) {
-                        processId = pidFromLog
-                    }
+                    processId = pidFromLog
                 }
 
                 super.onTextAvailable(event, outputType)
