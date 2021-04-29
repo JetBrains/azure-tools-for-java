@@ -65,8 +65,7 @@ object FunctionLocalSettingsParser {
         val isEncrypted = findBooleanProperty(topLevelObject, PROPERTY_IS_ENCRYPTED)
 
         val valuesObject = topLevelObject.findProperty(OBJECT_VALUES)?.value as? JsonObject
-        val runtime = findStringProperty(valuesObject, PROPERTY_VALUES_RUNTIME)?.let { runtime ->
-            FunctionsWorkerRuntime.values().firstOrNull { it.value.equals(runtime, ignoreCase = true) } }
+        val runtime = findStringProperty(valuesObject, PROPERTY_VALUES_RUNTIME)?.let { FunctionsWorkerRuntime.fromString(it) }
         val webJobsStorage = findStringProperty(valuesObject, PROPERTY_VALUES_WEB_JOBS_STORAGE)
         val webJobsDashboard = findStringProperty(valuesObject, PROPERTY_VALUES_WEB_JOBS_DASHBOARD)
         val bindingConnection = findStringProperty(valuesObject, PROPERTY_VALUES_BINDING_CONNECTION)

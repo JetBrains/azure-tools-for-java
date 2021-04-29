@@ -2,7 +2,7 @@
  * Copyright (c) 2019-2021 JetBrains s.r.o.
  *
  * All rights reserved.
- * 
+ *
  * MIT License
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
@@ -41,8 +41,9 @@ class AzureFunctionsDotNetCoreRuntime(val coreToolsInfo: FunctionsCoreToolsInfo,
 
     override fun createDebugState(dotNetExecutable: DotNetExecutable, executionEnvironment: ExecutionEnvironment) : IDotNetDebugProfileState {
         return when (workerRuntime) {
+            FunctionsWorkerRuntime.DotNetDefault -> AzureFunctionsDotNetCoreDebugProfile(dotNetExecutable, executionEnvironment, coreToolsInfo.coreToolsExecutable, coreToolsInfo.coreToolsPath)
             FunctionsWorkerRuntime.DotNetIsolated -> AzureFunctionsDotNetCoreIsolatedDebugProfile(dotNetExecutable, executionEnvironment)
-            FunctionsWorkerRuntime.Default -> AzureFunctionsDotNetCoreDebugProfile(dotNetExecutable, executionEnvironment, coreToolsInfo.coreToolsExecutable, coreToolsInfo.coreToolsPath)
+            else -> AzureFunctionsDotNetCoreDebugProfile(dotNetExecutable, executionEnvironment, coreToolsInfo.coreToolsExecutable, coreToolsInfo.coreToolsPath)
         }
     }
 
