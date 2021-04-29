@@ -33,6 +33,7 @@ import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Key
+import com.intellij.util.execution.ParametersListUtil
 import com.jetbrains.rd.util.lifetime.Lifetime
 import com.jetbrains.rdclient.util.idea.pumpMessages
 import com.jetbrains.rider.debugger.DebuggerHelperHost
@@ -54,6 +55,7 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
 
     companion object {
         private val logger = Logger.getInstance(AzureFunctionsDotNetCoreIsolatedDebugProfile::class.java)
+        private const val DOTNET_ISOLATED_DEBUG_ARGUMENT = "--dotnet-isolated-debug"
     }
 
     private var processId = 0
@@ -89,11 +91,16 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
     private fun launchAzureFunctionsHost() {
         val useExternalConsole = dotNetExecutable.useExternalConsole
 
+        val programParameters = ParametersListUtil.parse(dotNetExecutable.programParameterString)
+        if (!programParameters.contains(DOTNET_ISOLATED_DEBUG_ARGUMENT)) {
+            programParameters.add(DOTNET_ISOLATED_DEBUG_ARGUMENT)
+        }
+
         val commandLine = createEmptyConsoleCommandLine(useExternalConsole)
                 .withExePath(dotNetExecutable.exePath)
                 .withWorkDirectory(dotNetExecutable.workingDirectory)
                 .withEnvironment(dotNetExecutable.environmentVariables)
-                .withRawParameters(dotNetExecutable.programParameterString + " --dotnet-isolated-debug")
+                .withRawParameters(ParametersListUtil.join(programParameters))
 
         targetProcessHandler = if (useExternalConsole) {
             ExternalConsoleMediator.createProcessHandler(commandLine)
