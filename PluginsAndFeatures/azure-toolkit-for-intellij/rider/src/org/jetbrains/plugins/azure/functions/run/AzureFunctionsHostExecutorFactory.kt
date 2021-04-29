@@ -28,11 +28,17 @@ import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.Project
 import com.jetbrains.rider.run.configurations.IExecutorFactory
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfo
 import org.jetbrains.plugins.azure.functions.coreTools.FunctionsCoreToolsInfoProvider
+import org.jetbrains.plugins.azure.functions.run.localsettings.FunctionLocalSettingsUtil
+import org.jetbrains.plugins.azure.functions.run.localsettings.FunctionsWorkerRuntime
+import java.io.File
 
-class AzureFunctionsHostExecutorFactory(private val parameters: AzureFunctionsHostConfigurationParameters) : IExecutorFactory {
+class AzureFunctionsHostExecutorFactory(
+        private val parameters: AzureFunctionsHostConfigurationParameters
+) : IExecutorFactory {
 
     companion object {
         private val logger = Logger.getInstance(AzureFunctionsHostExecutorFactory::class.java)
@@ -49,10 +55,13 @@ class AzureFunctionsHostExecutorFactory(private val parameters: AzureFunctionsHo
         HostJsonPatcher.tryPatchHostJsonFile(parameters.workingDirectory, parameters.functionNames)
 
         logger.debug("Determine worker runtime from local.settings.json")
-        val workerRuntime = LocalSettingsJson.tryDetermineWorkerRuntime(parameters.workingDirectory)
+        val functionLocalSettings = FunctionLocalSettingsUtil.readFunctionLocalSettings(
+                project = parameters.project,
+                basePath = File(parameters.projectFilePath).parent)
+        val workerRuntime = functionLocalSettings?.values?.workerRuntime ?: FunctionsWorkerRuntime.Default
 
         val dotNetExecutable = parameters.toDotNetExecutable()
-        val runtimeToExecute = AzureFunctionsDotNetCoreRuntime(coreToolsInfo!!, workerRuntime ?: "")
+        val runtimeToExecute = AzureFunctionsDotNetCoreRuntime(coreToolsInfo!!, workerRuntime)
         logger.info("Configuration will be executed on ${runtimeToExecute.javaClass.name}")
         return when (executorId) {
             DefaultRunExecutor.EXECUTOR_ID -> runtimeToExecute.createRunState(dotNetExecutable, environment)
