@@ -114,9 +114,14 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
 
         val commandLineString = commandLine.commandLineString
 
-        logger.info("Functions host process started: $commandLineString")
+        logger.info("Starting functions host process with command line: $commandLineString")
         targetProcessHandler.addProcessListener(object : ProcessAdapter() {
             override fun processTerminated(event: ProcessEvent) = logger.info("Process terminated: $commandLineString")
+
+            override fun startNotified(event: ProcessEvent) {
+                logger.info("Started functions host process")
+                super.startNotified(event)
+            }
 
             override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
                 val line = event.text
