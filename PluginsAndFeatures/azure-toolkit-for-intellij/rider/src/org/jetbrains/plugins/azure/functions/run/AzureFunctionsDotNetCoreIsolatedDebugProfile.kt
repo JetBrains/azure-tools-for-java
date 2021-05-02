@@ -67,7 +67,7 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
         launchAzureFunctionsHost()
 
         // Wait until we get a process ID (or the process terminates)
-        pumpMessages(Duration.ofMinutes(5)) {
+        pumpMessages(Duration.ofMinutes(2)) {
             processId != 0 || targetProcessHandler.isProcessTerminated
         }
         if (processId == 0) {
