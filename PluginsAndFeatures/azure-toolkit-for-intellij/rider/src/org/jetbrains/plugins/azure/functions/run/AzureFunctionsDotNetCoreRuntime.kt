@@ -43,7 +43,6 @@ class AzureFunctionsDotNetCoreRuntime(val coreToolsInfo: FunctionsCoreToolsInfo,
         return when (workerRuntime) {
             FunctionsWorkerRuntime.DotNetDefault -> AzureFunctionsDotNetCoreDebugProfile(dotNetExecutable, executionEnvironment, coreToolsInfo.coreToolsExecutable, coreToolsInfo.coreToolsPath)
             FunctionsWorkerRuntime.DotNetIsolated -> AzureFunctionsDotNetCoreIsolatedDebugProfile(dotNetExecutable, executionEnvironment)
-            else -> AzureFunctionsDotNetCoreDebugProfile(dotNetExecutable, executionEnvironment, coreToolsInfo.coreToolsExecutable, coreToolsInfo.coreToolsPath)
         }
     }
 

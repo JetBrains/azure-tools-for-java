@@ -37,18 +37,7 @@ data class FunctionValuesModel(
 
 data class FunctionHostModel(val localHttpPort: Int?, val cors: String?, val corsCredentials: Boolean?)
 
-data class FunctionsWorkerRuntime(val value: String) {
-
-    companion object {
-
-        val DotNetDefault = FunctionsWorkerRuntime("dotnet")
-        val DotNetIsolated = FunctionsWorkerRuntime("dotnet-isolated")
-
-        fun fromString(value: String) =
-                when {
-                    value.equals(DotNetDefault.value, ignoreCase = true) -> DotNetDefault
-                    value.equals(DotNetIsolated.value, ignoreCase = true) -> DotNetIsolated
-                    else -> FunctionsWorkerRuntime(value)
-                }
-    }
+enum class FunctionsWorkerRuntime(val value: String) {
+    DotNetDefault("dotnet"),
+    DotNetIsolated("dotnet-isolated")
 }
