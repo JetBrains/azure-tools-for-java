@@ -73,15 +73,19 @@ class AzureFunctionsDotNetCoreIsolatedDebugProfile(
         if (processId == 0) {
             logger.error("Azure Functions host did not return isolated worker process id.")
 
-            // REVIEW: If we do not get pid from the isolated worker process, should we destroy the process here?
+            // If we do not get pid from the isolated worker process, destroy the process here
             if (!targetProcessHandler.isProcessTerminating && !targetProcessHandler.isProcessTerminated) {
                 targetProcessHandler.destroyProcess()
             }
 
-            // REVIEW: Should we throw here instead?
-            PluginUtil.showErrorNotification(
+            // Notify user
+            PluginUtil.showErrorNotificationProject(
+                    executionEnvironment.project,
                     RiderAzureBundle.message("run_config.run_function_app.debug.notification.title"),
                     RiderAzureBundle.message("run_config.run_function_app.debug.notification.isolated_worker_pid_unspecified"))
+
+            // Throw and bail out early
+            throw RuntimeException(RiderAzureBundle.message("run_config.run_function_app.debug.notification.isolated_worker_pid_unspecified"))
         }
 
         // Create debugger worker info
