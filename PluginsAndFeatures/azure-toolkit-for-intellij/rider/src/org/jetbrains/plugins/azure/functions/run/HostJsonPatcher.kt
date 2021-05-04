@@ -59,7 +59,7 @@ object HostJsonPatcher {
                 .filter { it.isNotBlank() }
 
         if (functions.isEmpty()) {
-            logger.warn("Skip patching " + hostJsonFile.absolutePath + " - no function names were specified.")
+            logger.info("Skip patching " + hostJsonFile.absolutePath + " - no function names were specified.")
             return
         }
 

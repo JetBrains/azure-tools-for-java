@@ -78,10 +78,7 @@ class HostJsonPatcherTest {
     @Test
     fun testPatchHostJsonFile_EmptyFunctionNames_NotUpdated() {
         val workingDir = hostJsonFile.parent
-
-        checkWarningContains("WARN: Skip patching", "host.json - no function names were specified.") {
-            HostJsonPatcher.tryPatchHostJsonFile(workingDirectory = workingDir, functionNames = "")
-        }
+        HostJsonPatcher.tryPatchHostJsonFile(workingDirectory = workingDir, functionNames = "")
 
         hostJsonFile.exists().shouldBeTrue()
         hostJsonFile.readText().shouldBe(StringBuilder()
