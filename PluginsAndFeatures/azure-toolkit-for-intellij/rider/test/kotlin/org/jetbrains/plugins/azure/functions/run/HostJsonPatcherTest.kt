@@ -205,7 +205,6 @@ class HostJsonPatcherTest {
             val errorStream = ByteArrayOutputStream()
             System.setErr(PrintStream(errorStream))
             action()
-
             errorStream.toString().shouldContains(warnMessage)
         } finally {
             System.setErr(originErr)
