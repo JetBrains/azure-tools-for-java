@@ -199,16 +199,14 @@ class HostJsonPatcherTest {
     }
 
     @Suppress("SameParameterValue")
-    private fun checkWarningContains(vararg warnMessage: String, action: () -> Unit) {
+    private fun checkWarningContains(warnMessage: String, action: () -> Unit) {
         val originErr = System.err
         try {
             val errorStream = ByteArrayOutputStream()
             System.setErr(PrintStream(errorStream))
             action()
 
-            for (msg in warnMessage) {
-                errorStream.toString().shouldContains(msg)
-            }
+            errorStream.toString().shouldContains(warnMessage)
         } finally {
             System.setErr(originErr)
         }
