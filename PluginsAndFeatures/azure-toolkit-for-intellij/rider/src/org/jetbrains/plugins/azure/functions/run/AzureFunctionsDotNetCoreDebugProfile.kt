@@ -59,6 +59,9 @@ class AzureFunctionsDotNetCoreDebugProfile(
     private fun getWorkerPlatform(lifetime: Lifetime): DebuggerWorkerPlatform {
         if (!SystemInfo.isWindows) return DebuggerWorkerPlatform.AnyCpu
 
+        // TODO: ClassCastException occurs with this line of code.
+        // Try again once Kotlin is upgraded in RD and the Azure Toolkit.
+        // val isFuncX64 = DebuggerHelperHost.getInstance(executionEnvironment.project).willExeRunAs64Bit(lifetime, coreToolsExecutablePath)
         val isFuncX64 = DebuggerHelperHost.getInstance(executionEnvironment.project)
                 .model.isExeWillRunAs64Bit
                 .syncFromBackendWithoutGateway(coreToolsExecutablePath, executionEnvironment.project, lifetime) ?: throw CantRunException("Execution was cancelled")
