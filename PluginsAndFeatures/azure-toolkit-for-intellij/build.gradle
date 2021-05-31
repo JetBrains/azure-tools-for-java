@@ -161,6 +161,6 @@ configure(mainProjects) {
 defaultTasks 'buildPlugin'
 
 wrapper() {
-    gradleVersion = '6.5'
+    gradleVersion = '6.7'
     distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
